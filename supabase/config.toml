@@ -1,0 +1,46 @@
+# Supabase Project Configuration
+# A string used to distinguish different Supabase projects on the same host
+project_id = "football-leagues"
+
+[api]
+enabled = true
+# Port to use for the API URL
+port = 54321
+# Schemas to expose in your API
+schemas = ["public", "storage"]
+# Extra schemas to add to the search_path of every request
+extra_search_path = ["public", "extensions"]
+# The maximum number of rows returns from a view, table, or stored procedure
+max_rows = 1000
+
+[db]
+# Port to use for the local database URL
+port = 54322
+# Port to use for the local shadow database
+shadow_port = 54320
+# The database major version to use
+major_version = 17
+
+[studio]
+# Port to use for Supabase Studio
+port = 54323
+# External URL of the API server
+api_url = "http://localhost"
+
+[auth]
+# Enable signup
+enable_signup = true
+# Enable manual linking
+enable_manual_linking = true
+
+[auth.email]
+# Allow/disallow new user signups via email to your project
+enable_signup = true
+# If enabled, a user will be required to confirm any email change
+double_confirm_changes = true
+# If enabled, users need to confirm their email address before signing in
+enable_confirmations = false
+
+[storage]
+# The maximum file size allowed (e.g., "5MB")
+file_size_limit = "5MB"
