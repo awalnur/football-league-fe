@@ -677,11 +677,11 @@ export default function StandingsPage() {
                   </div>
                   <div className="flex items-center gap-2">
                     <span className="h-3 w-1 rounded-full bg-gradient-to-b from-green-400 to-green-600"></span>
-                    <span className="text-slate-400">Liga Champions</span>
+                    <span className="text-slate-400">Liga Super</span>
                   </div>
                   <div className="flex items-center gap-2">
                     <span className="h-3 w-1 rounded-full bg-gradient-to-b from-blue-400 to-blue-600"></span>
-                    <span className="text-slate-400">Liga Europa</span>
+                    <span className="text-slate-400">Liga Liga</span>
                   </div>
                   <div className="flex items-center gap-2">
                     <span className="h-3 w-1 rounded-full bg-gradient-to-b from-red-400 to-red-600"></span>
