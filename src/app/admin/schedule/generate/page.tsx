@@ -292,7 +292,7 @@ export default function GenerateSchedulePage() {
 
           {/* Matches Per Day */}
           <div>
-            <label className="block text-sm font-medium text-gray-300 mb-2">Pertandingan Per Hari</label>
+            <label className="block text-sm font-medium text-gray-300 mb-2">Berapa Kali Tim Tanding Per Hari?</label>
             <div className="grid grid-cols-4 gap-3">
               {[1, 2, 3, 4].map((num) => (
                 <button
@@ -305,14 +305,23 @@ export default function GenerateSchedulePage() {
                       : 'bg-gray-700 border-gray-600 text-gray-300 hover:border-gray-500'
                   }`}
                 >
-                  <span className="text-xl font-bold block">{num}</span>
-                  <span className="text-xs text-gray-400">match/hari</span>
+                  <span className="text-xl font-bold block">{num}x</span>
+                  <span className="text-xs text-gray-400">per hari</span>
                 </button>
               ))}
             </div>
-            <p className="text-xs text-gray-500 mt-2">
-              Jumlah pertandingan yang dijadwalkan dalam satu hari. Pertandingan akan dijadwalkan mulai pukul 19:00 dengan interval 2 jam.
-            </p>
+            <div className="mt-3 p-3 bg-gray-700/30 rounded-lg">
+              <p className="text-sm text-gray-300">
+                <span className="text-orange-400 font-medium">Artinya:</span>{' '}
+                Setiap tim akan bertanding <span className="text-white font-bold">{matchesPerDay}x dalam satu hari</span>
+              </p>
+              <p className="text-xs text-gray-500 mt-1">
+                {matchesPerDay === 1 && 'Jadwal: Pekan 1 (19:00), Pekan 2 (hari berikutnya 19:00), dst.'}
+                {matchesPerDay === 2 && 'Jadwal: Pekan 1 (19:00), Pekan 2 (20:00), Pekan 3 (hari berikutnya 19:00), dst.'}
+                {matchesPerDay === 3 && 'Jadwal: Pekan 1 (19:00), Pekan 2 (20:00), Pekan 3 (21:00), Pekan 4 (hari berikutnya), dst.'}
+                {matchesPerDay === 4 && 'Jadwal: Pekan 1-4 dalam satu hari (19:00, 20:00, 21:00, 22:00), dst.'}
+              </p>
+            </div>
           </div>
 
           {/* Schedule Preview */}

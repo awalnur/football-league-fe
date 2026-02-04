@@ -452,18 +452,21 @@ DECLARE
     i INTEGER;
     k INTEGER;
     total_matches INTEGER := 0;
-    day_offset INTEGER;
-    match_in_day INTEGER;
-    matches_per_actual_day INTEGER;
+    matchday_group INTEGER;
+    matchday_in_group INTEGER;
+    start_hour INTEGER;
 BEGIN
     -- Validate interval days
     IF p_interval_days < 1 THEN
         p_interval_days := 1;
     END IF;
 
-    -- Validate matches per day (minimum 1, maximum we'll calculate)
+    -- Validate matches per day (minimum 1, maximum 4 matchdays per day)
     IF p_matches_per_day < 1 THEN
         p_matches_per_day := 1;
+    END IF;
+    IF p_matches_per_day > 4 THEN
+        p_matches_per_day := 4;
     END IF;
 
     -- Get all team IDs for this league
@@ -486,34 +489,35 @@ BEGIN
     num_matchdays := num_teams - 1;
     matches_per_matchday := num_teams / 2;
 
-    -- Limit matches per day to available matches per matchday
-    IF p_matches_per_day > matches_per_matchday THEN
-        p_matches_per_day := matches_per_matchday;
-    END IF;
-
     -- Delete existing scheduled matches (not completed ones)
     DELETE FROM matches
     WHERE league_id = p_league_id AND status = 'scheduled';
 
     -- Round Robin Algorithm using circle method
-    -- First leg (home and away)
+    -- p_matches_per_day = how many matchdays to schedule per calendar day
+    -- Example: p_matches_per_day = 2 means 2 matchdays per day, so each team plays twice per day
+
     FOR current_matchday IN 1..num_matchdays LOOP
+        -- Calculate which calendar day this matchday falls on
+        -- matchday_group: which group of matchdays (0, 1, 2, ...) - determines the calendar day
+        -- matchday_in_group: position within the group (0 to p_matches_per_day-1) - determines the time slot
+        matchday_group := (current_matchday - 1) / p_matches_per_day;
+        matchday_in_group := (current_matchday - 1) % p_matches_per_day;
+
+        -- Calculate start hour based on position in group
+        -- First matchday of day: 19:00, Second: 20:00, Third: 21:00, Fourth: 22:00
+        start_hour := 19 + matchday_in_group;
+
         -- Generate matches for this matchday
         FOR i IN 0..(matches_per_matchday - 1) LOOP
             home_idx := i + 1;
             away_idx := num_teams - i;
 
-            -- Calculate which day this match falls on within the matchday
-            -- day_offset: which day within the matchday period (0, 1, 2, ...)
-            -- match_in_day: which match slot within that day (0, 1 for 2 matches per day)
-            day_offset := i / p_matches_per_day;
-            match_in_day := i % p_matches_per_day;
-
             -- Calculate match date for first leg
+            -- All matches in same matchday happen at the same time (parallel matches)
             match_date := p_start_date
-                + ((current_matchday - 1) * p_interval_days * INTERVAL '1 day')
-                + (day_offset * INTERVAL '1 day')
-                + ((19 + match_in_day * 2) * INTERVAL '1 hour'); -- Start at 19:00, next at 21:00
+                + (matchday_group * p_interval_days * INTERVAL '1 day')
+                + (start_hour * INTERVAL '1 hour');
 
             -- Insert first leg match
             INSERT INTO matches (league_id, home_team_id, away_team_id, match_week, match_date, status)
@@ -527,14 +531,14 @@ BEGIN
             );
             total_matches := total_matches + 1;
 
-            -- Insert second leg (return match) - after all first leg matches
+            -- Insert second leg (return match) - after all first leg matchdays
             INSERT INTO matches (league_id, home_team_id, away_team_id, match_week, match_date, status)
             VALUES (
                 p_league_id,
                 team_ids[away_idx],
                 team_ids[home_idx],
                 current_matchday + num_matchdays, -- Second leg matchweek
-                match_date + ((num_matchdays * p_interval_days) * INTERVAL '1 day'),
+                match_date + (CEIL(num_matchdays::DECIMAL / p_matches_per_day) * p_interval_days * INTERVAL '1 day'),
                 'scheduled'
             );
             total_matches := total_matches + 1;
