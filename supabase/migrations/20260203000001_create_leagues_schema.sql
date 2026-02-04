@@ -435,34 +435,36 @@ CREATE TRIGGER on_match_result
 CREATE OR REPLACE FUNCTION generate_league_schedule(
     p_league_id UUID,
     p_start_date DATE DEFAULT CURRENT_DATE,
-    p_interval_days INTEGER DEFAULT 7
+    p_interval_days INTEGER DEFAULT 7,
+    p_matches_per_day INTEGER DEFAULT 2
 )
 RETURNS INTEGER AS $$
 DECLARE
     team_ids UUID[];
     num_teams INTEGER;
     num_matchdays INTEGER;
-    matches_per_day INTEGER;
+    matches_per_matchday INTEGER;
     current_matchday INTEGER;
     match_date TIMESTAMPTZ;
     home_idx INTEGER;
     away_idx INTEGER;
     temp_id UUID;
-    schedule_array INTEGER[][];
     i INTEGER;
-    j INTEGER;
     k INTEGER;
     total_matches INTEGER := 0;
-    rotated_teams UUID[];
-    interval_text TEXT;
+    day_offset INTEGER;
+    match_in_day INTEGER;
+    matches_per_actual_day INTEGER;
 BEGIN
     -- Validate interval days
     IF p_interval_days < 1 THEN
         p_interval_days := 1;
     END IF;
 
-    -- Build interval text
-    interval_text := p_interval_days || ' days';
+    -- Validate matches per day (minimum 1, maximum we'll calculate)
+    IF p_matches_per_day < 1 THEN
+        p_matches_per_day := 1;
+    END IF;
 
     -- Get all team IDs for this league
     SELECT ARRAY_AGG(id ORDER BY RANDOM()) INTO team_ids
@@ -482,7 +484,12 @@ BEGIN
 
     -- Calculate matchdays (round robin = n-1 matchdays for first leg)
     num_matchdays := num_teams - 1;
-    matches_per_day := num_teams / 2;
+    matches_per_matchday := num_teams / 2;
+
+    -- Limit matches per day to available matches per matchday
+    IF p_matches_per_day > matches_per_matchday THEN
+        p_matches_per_day := matches_per_matchday;
+    END IF;
 
     -- Delete existing scheduled matches (not completed ones)
     DELETE FROM matches
@@ -491,12 +498,22 @@ BEGIN
     -- Round Robin Algorithm using circle method
     -- First leg (home and away)
     FOR current_matchday IN 1..num_matchdays LOOP
-        match_date := p_start_date + ((current_matchday - 1) * p_interval_days * INTERVAL '1 day');
-
         -- Generate matches for this matchday
-        FOR i IN 0..(matches_per_day - 1) LOOP
+        FOR i IN 0..(matches_per_matchday - 1) LOOP
             home_idx := i + 1;
             away_idx := num_teams - i;
+
+            -- Calculate which day this match falls on within the matchday
+            -- day_offset: which day within the matchday period (0, 1, 2, ...)
+            -- match_in_day: which match slot within that day (0, 1 for 2 matches per day)
+            day_offset := i / p_matches_per_day;
+            match_in_day := i % p_matches_per_day;
+
+            -- Calculate match date for first leg
+            match_date := p_start_date
+                + ((current_matchday - 1) * p_interval_days * INTERVAL '1 day')
+                + (day_offset * INTERVAL '1 day')
+                + ((19 + match_in_day * 2) * INTERVAL '1 hour'); -- Start at 19:00, next at 21:00
 
             -- Insert first leg match
             INSERT INTO matches (league_id, home_team_id, away_team_id, match_week, match_date, status)
@@ -505,7 +522,7 @@ BEGIN
                 team_ids[home_idx],
                 team_ids[away_idx],
                 current_matchday,
-                match_date + (i * INTERVAL '2 hours'), -- Stagger match times
+                match_date,
                 'scheduled'
             );
             total_matches := total_matches + 1;
@@ -517,7 +534,7 @@ BEGIN
                 team_ids[away_idx],
                 team_ids[home_idx],
                 current_matchday + num_matchdays, -- Second leg matchweek
-                match_date + ((num_matchdays * p_interval_days) * INTERVAL '1 day') + (i * INTERVAL '2 hours'),
+                match_date + ((num_matchdays * p_interval_days) * INTERVAL '1 day'),
                 'scheduled'
             );
             total_matches := total_matches + 1;

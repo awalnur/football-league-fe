@@ -80,11 +80,12 @@ export async function createLeague(league: {
   return { data, error };
 }
 
-export async function generateSchedule(leagueId: string, startDate?: string, intervalDays: number = 7) {
+export async function generateSchedule(leagueId: string, startDate?: string, intervalDays: number = 7, matchesPerDay: number = 2) {
   const { data, error } = await supabase.rpc('generate_league_schedule', {
     p_league_id: leagueId,
     p_start_date: startDate,
     p_interval_days: intervalDays,
+    p_matches_per_day: matchesPerDay,
   } as any);
   return { data, error };
 }

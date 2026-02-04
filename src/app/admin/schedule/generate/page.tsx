@@ -27,6 +27,7 @@ export default function GenerateSchedulePage() {
   const [startDate, setStartDate] = useState<string>('');
   const [intervalType, setIntervalType] = useState<'daily' | 'weekly' | 'custom'>('weekly');
   const [customDays, setCustomDays] = useState<number>(3);
+  const [matchesPerDay, setMatchesPerDay] = useState<number>(2);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState<{ matches: number } | null>(null);
@@ -90,7 +91,8 @@ export default function GenerateSchedulePage() {
     const { data, error: genError } = await generateSchedule(
       selectedLeague,
       startDate || undefined,
-      intervalDays
+      intervalDays,
+      matchesPerDay
     );
 
     if (genError) {
@@ -286,6 +288,31 @@ export default function GenerateSchedulePage() {
                 {intervalType === 'custom' && `Setiap ${customDays} hari`}
               </p>
             </div>
+          </div>
+
+          {/* Matches Per Day */}
+          <div>
+            <label className="block text-sm font-medium text-gray-300 mb-2">Pertandingan Per Hari</label>
+            <div className="grid grid-cols-4 gap-3">
+              {[1, 2, 3, 4].map((num) => (
+                <button
+                  key={num}
+                  type="button"
+                  onClick={() => setMatchesPerDay(num)}
+                  className={`p-3 rounded-lg border transition-all text-center ${
+                    matchesPerDay === num
+                      ? 'bg-orange-600/20 border-orange-500 text-orange-400'
+                      : 'bg-gray-700 border-gray-600 text-gray-300 hover:border-gray-500'
+                  }`}
+                >
+                  <span className="text-xl font-bold block">{num}</span>
+                  <span className="text-xs text-gray-400">match/hari</span>
+                </button>
+              ))}
+            </div>
+            <p className="text-xs text-gray-500 mt-2">
+              Jumlah pertandingan yang dijadwalkan dalam satu hari. Pertandingan akan dijadwalkan mulai pukul 19:00 dengan interval 2 jam.
+            </p>
           </div>
 
           {/* Schedule Preview */}

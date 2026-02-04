@@ -321,11 +321,11 @@ export default function TeamsPage() {
                     }`}
                   >
                     <div
-                      className="w-16 h-16 rounded-lg mx-auto mb-2 flex items-center justify-center group-hover:scale-110 transition-transform"
-                      style={{ backgroundColor: team.primary_color || '#374151' }}
+                      className={`w-16 h-16 rounded-lg mx-auto mb-2 flex items-center justify-center group-hover:scale-110 transition-transform ${!team.logo_url ? '' : ''}`}
+                      style={{ backgroundColor: team.logo_url ? 'transparent' : (team.primary_color || '#374151') }}
                     >
                       {team.logo_url ? (
-                        <img src={team.logo_url} alt={team.name} className="w-12 h-12 object-contain" />
+                        <img src={team.logo_url} alt={team.name} className="w-14 h-14 object-contain" />
                       ) : (
                         <span className="text-slate-300">{Icons.shield}</span>
                       )}
@@ -349,10 +349,10 @@ export default function TeamsPage() {
                   <div className="flex items-center gap-4">
                     <div
                       className="w-20 h-20 rounded-lg flex items-center justify-center"
-                      style={{ backgroundColor: selectedTeam.primary_color || '#374151' }}
+                      style={{ backgroundColor: selectedTeam.logo_url ? 'transparent' : (selectedTeam.primary_color || '#374151') }}
                     >
                       {selectedTeam.logo_url ? (
-                        <img src={selectedTeam.logo_url} alt={selectedTeam.name} className="w-14 h-14 object-contain" />
+                        <img src={selectedTeam.logo_url} alt={selectedTeam.name} className="w-16 h-16 object-contain" />
                       ) : (
                         <span className="text-slate-300 text-3xl">{Icons.shield}</span>
                       )}
@@ -585,9 +585,9 @@ export default function TeamsPage() {
                                   <div className="flex items-center justify-center gap-4">
                                     {/* Home Team */}
                                     <div className="flex flex-col items-center gap-2">
-                                      <div className="w-12 h-12 rounded-lg bg-slate-700 flex items-center justify-center">
+                                      <div className={`w-12 h-12 rounded-lg flex items-center justify-center ${match.home_team_logo ? '' : 'bg-slate-700'}`}>
                                         {match.home_team_logo ? (
-                                          <img src={match.home_team_logo} alt="" className="w-8 h-8 object-contain" />
+                                          <img src={match.home_team_logo} alt="" className="w-10 h-10 object-contain" />
                                         ) : (
                                           <span className="text-slate-400">{Icons.shield}</span>
                                         )}
@@ -617,9 +617,9 @@ export default function TeamsPage() {
 
                                     {/* Away Team */}
                                     <div className="flex flex-col items-center gap-2">
-                                      <div className="w-12 h-12 rounded-lg bg-slate-700 flex items-center justify-center">
+                                      <div className={`w-12 h-12 rounded-lg flex items-center justify-center ${match.away_team_logo ? '' : 'bg-slate-700'}`}>
                                         {match.away_team_logo ? (
-                                          <img src={match.away_team_logo} alt="" className="w-8 h-8 object-contain" />
+                                          <img src={match.away_team_logo} alt="" className="w-10 h-10 object-contain" />
                                         ) : (
                                           <span className="text-slate-400">{Icons.shield}</span>
                                         )}
