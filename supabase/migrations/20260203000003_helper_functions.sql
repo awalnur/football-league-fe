@@ -121,7 +121,8 @@ RETURNS TABLE (
     away_score INTEGER,
     status match_status,
     is_home BOOLEAN,
-    result CHAR(1)
+    result CHAR(1),
+    screenshot_url TEXT
 ) AS $$
 BEGIN
     RETURN QUERY
@@ -135,17 +136,19 @@ BEGIN
         at.id as away_team_id,
         at.name as away_team_name,
         at.logo_url as away_team_logo,
-        m.home_score,
-        m.away_score,
+        COALESCE(m.home_score, 0) as home_score,
+        COALESCE(m.away_score, 0) as away_score,
         m.status,
         (m.home_team_id = p_team_id) as is_home,
         CASE
-            WHEN m.status != 'completed' THEN NULL
-            WHEN m.home_team_id = p_team_id AND m.home_score > m.away_score THEN 'W'
-            WHEN m.away_team_id = p_team_id AND m.away_score > m.home_score THEN 'W'
-            WHEN m.home_score = m.away_score THEN 'D'
-            ELSE 'L'
-        END as result
+            WHEN m.status != 'completed' THEN NULL::CHAR(1)
+            WHEN m.home_score IS NULL OR m.away_score IS NULL THEN NULL::CHAR(1)
+            WHEN m.home_team_id = p_team_id AND m.home_score > m.away_score THEN 'W'::CHAR(1)
+            WHEN m.away_team_id = p_team_id AND m.away_score > m.home_score THEN 'W'::CHAR(1)
+            WHEN m.home_score = m.away_score THEN 'D'::CHAR(1)
+            ELSE 'L'::CHAR(1)
+        END as result,
+        (SELECT ms.image_url FROM match_screenshots ms WHERE ms.match_id = m.id ORDER BY ms.created_at DESC LIMIT 1) as screenshot_url
     FROM matches m
     JOIN teams ht ON ht.id = m.home_team_id
     JOIN teams at ON at.id = m.away_team_id

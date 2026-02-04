@@ -73,6 +73,16 @@ interface League {
   logo_url: string | null;
 }
 
+interface Screenshot {
+  id: string;
+  image_url: string;
+  caption: string | null;
+}
+
+interface MatchDetail {
+  screenshots: Screenshot[];
+}
+
 interface UpcomingMatch {
   id: string;
   match_date: string;
@@ -106,6 +116,9 @@ export default function Home() {
   const [upcomingMatches, setUpcomingMatches] = useState<UpcomingMatch[]>([]);
   const [activeMatchFilter, setActiveMatchFilter] = useState<string>('all');
   const [loading, setLoading] = useState(true);
+  const [expandedMatch, setExpandedMatch] = useState<string | null>(null);
+  const [matchDetails, setMatchDetails] = useState<Record<string, MatchDetail>>({});
+  const [loadingDetail, setLoadingDetail] = useState(false);
 
   useEffect(() => {
     loadStats();
@@ -158,6 +171,36 @@ export default function Home() {
       console.error('Error loading stats:', error);
     } finally {
       setLoading(false);
+    }
+  }
+
+  async function loadMatchDetail(matchId: string) {
+    if (matchDetails[matchId]) return;
+
+    setLoadingDetail(true);
+
+    const { data: screenshots } = await supabase
+      .from('match_screenshots')
+      .select('id, image_url, caption')
+      .eq('match_id', matchId)
+      .order('created_at', { ascending: false });
+
+    setMatchDetails(prev => ({
+      ...prev,
+      [matchId]: {
+        screenshots: (screenshots as Screenshot[]) || [],
+      }
+    }));
+
+    setLoadingDetail(false);
+  }
+
+  async function toggleMatchDetail(matchId: string) {
+    if (expandedMatch === matchId) {
+      setExpandedMatch(null);
+    } else {
+      setExpandedMatch(matchId);
+      await loadMatchDetail(matchId);
     }
   }
 
@@ -369,79 +412,208 @@ export default function Home() {
                   filteredMatches.slice(0, 10).map((match) => {
                     const matchDate = match.match_date ? new Date(match.match_date) : null;
                     const leagueName = recentLeagues.find(l => l.id === match.league_id)?.name || 'Liga';
+                    const leagueType = recentLeagues.find(l => l.id === match.league_id)?.type || 'football';
+                    const isExpanded = expandedMatch === match.id;
+                    const detail = matchDetails[match.id];
+                    const homeWin = match.status === 'completed' && (match.home_score ?? 0) > (match.away_score ?? 0);
+                    const awayWin = match.status === 'completed' && (match.away_score ?? 0) > (match.home_score ?? 0);
+                    const isDraw = match.status === 'completed' && match.home_score === match.away_score;
 
                     return (
-                      <div key={match.id} className="px-4 py-3 hover:bg-slate-800/30 transition-colors">
-                        {/* Date & League Row */}
-                        <div className="flex items-center justify-between mb-2">
-                          <div className="flex items-center gap-2">
-                            <span className="text-xs text-slate-500">
-                              {matchDate ? matchDate.toLocaleDateString('id-ID', { weekday: 'short', day: 'numeric', month: 'short' }) : 'TBD'}
-                            </span>
-                            <span className="text-xs text-slate-600">•</span>
-                            <span className="text-xs font-medium text-orange-400">
-                              {matchDate ? matchDate.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' }) : '--:--'}
-                            </span>
+                      <div key={match.id} className="overflow-hidden">
+                        {/* Clickable Match Row */}
+                        <button
+                          onClick={() => toggleMatchDetail(match.id)}
+                          className="w-full px-4 py-3 hover:bg-slate-800/30 transition-colors text-left"
+                        >
+                          {/* Date & League Row */}
+                          <div className="flex items-center justify-between mb-2">
+                            <div className="flex items-center gap-2">
+                              <span className="text-xs text-slate-500">
+                                {matchDate ? matchDate.toLocaleDateString('id-ID', { weekday: 'short', day: 'numeric', month: 'short' }) : 'TBD'}
+                              </span>
+                              <span className="text-xs text-slate-600">•</span>
+                              <span className="text-xs font-medium text-orange-400">
+                                {matchDate ? matchDate.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' }) : '--:--'}
+                              </span>
+                            </div>
+                            <span className="text-xs text-slate-500 truncate max-w-[120px]">{leagueName}</span>
                           </div>
-                          <span className="text-xs text-slate-500 truncate max-w-[120px]">{leagueName}</span>
-                        </div>
 
-                        {/* Match Row */}
-                        <div className="flex items-center gap-3">
-                          {/* Home Team */}
-                          <div className="flex items-center gap-2 flex-1 justify-end">
-                            <span className="text-sm font-medium text-white truncate text-right">
-                              {match.home_team?.short_name || match.home_team?.name || 'Home'}
-                            </span>
-                            <div className="w-8 h-8 rounded-lg bg-slate-800 flex items-center justify-center shrink-0">
-                              {match.home_team?.logo_url ? (
-                                <img src={match.home_team.logo_url} alt="" className="w-5 h-5 object-contain" />
+                          {/* Match Row */}
+                          <div className="flex items-center gap-3">
+                            {/* Home Team */}
+                            <div className="flex items-center gap-2 flex-1 justify-end">
+                              <span className="text-sm font-medium text-white truncate text-right">
+                                {match.home_team?.short_name || match.home_team?.name || 'Home'}
+                              </span>
+                              <div className="w-8 h-8 rounded-lg bg-slate-800 flex items-center justify-center shrink-0">
+                                {match.home_team?.logo_url ? (
+                                  <img src={match.home_team.logo_url} alt="" className="w-5 h-5 object-contain" />
+                                ) : (
+                                  <svg className="w-4 h-4 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
+                                    <path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+                                  </svg>
+                                )}
+                              </div>
+                            </div>
+
+                            {/* Score */}
+                            <div className={`px-3 py-1.5 rounded-lg min-w-[60px] text-center ${
+                              match.status === 'completed' ? 'bg-slate-700' : 'bg-slate-800'
+                            }`}>
+                              {match.status === 'completed' ? (
+                                <span className="text-base font-bold text-white">
+                                  {match.home_score} - {match.away_score}
+                                </span>
                               ) : (
-                                <svg className="w-4 h-4 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
-                                  <path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
-                                </svg>
+                                <span className="text-xs text-slate-400">vs</span>
                               )}
                             </div>
-                          </div>
 
-                          {/* Score */}
-                          <div className={`px-3 py-1.5 rounded-lg min-w-[60px] text-center ${
-                            match.status === 'completed' ? 'bg-slate-700' : 'bg-slate-800'
-                          }`}>
-                            {match.status === 'completed' ? (
-                              <span className="text-base font-bold text-white">
-                                {match.home_score} - {match.away_score}
+                            {/* Away Team */}
+                            <div className="flex items-center gap-2 flex-1">
+                              <div className="w-8 h-8 rounded-lg bg-slate-800 flex items-center justify-center shrink-0">
+                                {match.away_team?.logo_url ? (
+                                  <img src={match.away_team.logo_url} alt="" className="w-5 h-5 object-contain" />
+                                ) : (
+                                  <svg className="w-4 h-4 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
+                                    <path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+                                  </svg>
+                                )}
+                              </div>
+                              <span className="text-sm font-medium text-white truncate">
+                                {match.away_team?.short_name || match.away_team?.name || 'Away'}
                               </span>
+                            </div>
+
+                            {/* Status Badge & Chevron */}
+                            <div className="flex items-center gap-2">
+                              <span className={`text-xs px-2 py-0.5 rounded shrink-0 ${
+                                match.status === 'completed' 
+                                  ? 'bg-green-500/20 text-green-400' 
+                                  : 'bg-orange-500/20 text-orange-400'
+                              }`}>
+                                {match.status === 'completed' ? 'FT' : 'Soon'}
+                              </span>
+                              <div className={`text-slate-400 transition-transform ${isExpanded ? 'rotate-180' : ''}`}>
+                                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
+                                  <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
+                                </svg>
+                              </div>
+                            </div>
+                          </div>
+                        </button>
+
+                        {/* Expanded Detail */}
+                        {isExpanded && (
+                          <div className="border-t border-slate-800 bg-slate-800/30 p-4">
+                            {loadingDetail && !detail ? (
+                              <div className="flex items-center justify-center py-4">
+                                <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-orange-500"></div>
+                              </div>
                             ) : (
-                              <span className="text-xs text-slate-400">vs</span>
+                              <div className="space-y-4">
+                                {/* Match Detail Header */}
+                                <div className="flex items-center justify-center gap-6">
+                                  {/* Home Team */}
+                                  <div className="flex flex-col items-center gap-2">
+                                    <div className="w-12 h-12 rounded-lg bg-slate-700 flex items-center justify-center">
+                                      {match.home_team?.logo_url ? (
+                                        <img src={match.home_team.logo_url} alt="" className="w-8 h-8 object-contain" />
+                                      ) : (
+                                        <span className="text-slate-400">{Icons.shield}</span>
+                                      )}
+                                    </div>
+                                    <span className="text-xs text-white font-medium text-center max-w-[80px] truncate">{match.home_team?.name}</span>
+                                  </div>
+
+                                  {/* Score */}
+                                  <div className="text-center">
+                                    <div className={`text-2xl font-bold ${
+                                      isDraw ? 'text-yellow-400' : 'text-white'
+                                    }`}>
+                                      {match.home_score ?? 0} - {match.away_score ?? 0}
+                                    </div>
+                                    <p className="text-xs text-slate-400 mt-1">
+                                      {matchDate ? matchDate.toLocaleDateString('id-ID', {
+                                        weekday: 'long',
+                                        day: 'numeric',
+                                        month: 'long',
+                                        year: 'numeric'
+                                      }) : '-'}
+                                    </p>
+                                    {/* Result Badge */}
+                                    {match.status === 'completed' && (
+                                      <div className="mt-2">
+                                        <span className={`px-3 py-1 rounded-full text-xs font-medium ${
+                                          isDraw ? 'bg-yellow-500/20 text-yellow-400' : 'bg-green-500/20 text-green-400'
+                                        }`}>
+                                          {homeWin ? `🏆 ${match.home_team?.name} Menang` :
+                                           awayWin ? `🏆 ${match.away_team?.name} Menang` :
+                                           '🤝 Hasil Seri'}
+                                        </span>
+                                      </div>
+                                    )}
+                                  </div>
+
+                                  {/* Away Team */}
+                                  <div className="flex flex-col items-center gap-2">
+                                    <div className="w-12 h-12 rounded-lg bg-slate-700 flex items-center justify-center">
+                                      {match.away_team?.logo_url ? (
+                                        <img src={match.away_team.logo_url} alt="" className="w-8 h-8 object-contain" />
+                                      ) : (
+                                        <span className="text-slate-400">{Icons.shield}</span>
+                                      )}
+                                    </div>
+                                    <span className="text-xs text-white font-medium text-center max-w-[80px] truncate">{match.away_team?.name}</span>
+                                  </div>
+                                </div>
+
+                                {/* League Info */}
+                                <div className="flex justify-center">
+                                  <div className="flex items-center gap-2 text-xs text-slate-400">
+                                    <span className={`px-2 py-0.5 rounded ${leagueType === 'efootball' ? 'bg-purple-500/20 text-purple-400' : 'bg-green-500/20 text-green-400'}`}>
+                                      {leagueType === 'efootball' ? 'eFootball' : 'Football'}
+                                    </span>
+                                    <span>{leagueName}</span>
+                                    <span>•</span>
+                                    <span>Pekan {match.match_week}</span>
+                                  </div>
+                                </div>
+
+                                {/* Screenshots */}
+                                {detail && detail.screenshots.length > 0 && (
+                                  <div className="space-y-2">
+                                    <p className="text-xs text-slate-400 flex items-center gap-1">
+                                      <span className="text-purple-400">{Icons.gamepad}</span>
+                                      Screenshot Hasil
+                                    </p>
+                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                                      {detail.screenshots.map(screenshot => (
+                                        <div key={screenshot.id} className="bg-slate-700 rounded-lg overflow-hidden border border-slate-600">
+                                          <img src={screenshot.image_url} alt={screenshot.caption || 'Match Screenshot'} className="w-full h-auto object-cover" />
+                                          {screenshot.caption && (
+                                            <div className="p-2 border-t border-slate-600">
+                                              <p className="text-xs text-slate-400">{screenshot.caption}</p>
+                                            </div>
+                                          )}
+                                        </div>
+                                      ))}
+                                    </div>
+                                  </div>
+                                )}
+
+                                {/* No Screenshots */}
+                                {detail && detail.screenshots.length === 0 && match.status === 'completed' && (
+                                  <div className="text-center py-2 text-slate-500 text-xs">
+                                    Tidak ada screenshot untuk pertandingan ini
+                                  </div>
+                                )}
+                              </div>
                             )}
                           </div>
-
-                          {/* Away Team */}
-                          <div className="flex items-center gap-2 flex-1">
-                            <div className="w-8 h-8 rounded-lg bg-slate-800 flex items-center justify-center shrink-0">
-                              {match.away_team?.logo_url ? (
-                                <img src={match.away_team.logo_url} alt="" className="w-5 h-5 object-contain" />
-                              ) : (
-                                <svg className="w-4 h-4 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
-                                  <path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
-                                </svg>
-                              )}
-                            </div>
-                            <span className="text-sm font-medium text-white truncate">
-                              {match.away_team?.short_name || match.away_team?.name || 'Away'}
-                            </span>
-                          </div>
-
-                          {/* Status Badge */}
-                          <span className={`text-xs px-2 py-0.5 rounded shrink-0 ${
-                            match.status === 'completed' 
-                              ? 'bg-green-500/20 text-green-400' 
-                              : 'bg-orange-500/20 text-orange-400'
-                          }`}>
-                            {match.status === 'completed' ? 'FT' : 'Soon'}
-                          </span>
-                        </div>
+                        )}
                       </div>
                     );
                   })
