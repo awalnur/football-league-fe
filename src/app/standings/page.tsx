@@ -234,19 +234,39 @@ export default function StandingsPage() {
 
 
   const getFormBadges = (form: string | null) => {
-    if (!form) return null;
-    return form.split('').map((result, index) => (
-      <span
-        key={index}
-        className={`inline-flex h-6 w-6 items-center justify-center rounded text-xs font-bold shadow-sm transition-transform hover:scale-110 ${
-          result === 'W' ? 'bg-gradient-to-br from-green-400 to-green-600 text-white' :
-          result === 'D' ? 'bg-gradient-to-br from-yellow-400 to-yellow-600 text-white' :
-          'bg-gradient-to-br from-red-400 to-red-600 text-white'
-        }`}
-      >
+    const badges = [];
+    const formArray = form ? form.split('').reverse() : [];
+    const emptyCount = 5 - formArray.length;
+
+    // Add empty badges first
+    for (let i = 0; i < emptyCount; i++) {
+      badges.push(
+          <span
+              key={`empty-${i}`}
+              className="inline-flex h-6 w-6 items-center justify-center rounded-full text-xs font-bold shadow-sm bg-slate-700 text-slate-400"
+          >
+        -
+      </span>
+      );
+    }
+
+    // Add form badges after
+    formArray.forEach((result, i) => {
+      badges.push(
+          <span
+              key={i}
+              className={`inline-flex h-6 w-6 items-center justify-center rounded-full text-xs font-bold shadow-sm transition-transform hover:scale-110 ${
+                  result === 'W' ? 'bg-green-500 text-white' :
+                      result === 'D' ? 'bg-yellow-400 text-white' :
+                          'bg-red-500 text-white'
+              } ${i === formArray.length - 1 ? 'ring-2 ring-white ring-offset-1 ring-offset-slate-900' : ''}`}
+          >
         {result}
       </span>
-    ));
+      );
+    });
+
+    return badges;
   };
 
   const getPositionBadge = (position: number) => {
@@ -659,7 +679,7 @@ export default function StandingsPage() {
                             </span>
                           </td>
                           <td className="hidden lg:table-cell px-3 py-3">
-                            <div className="flex justify-center gap-1">{getFormBadges(team.form)}</div>
+                            <div className="flex justify-right gap-1">{getFormBadges(team.form)}</div>
                           </td>
                         </tr>
                       );
