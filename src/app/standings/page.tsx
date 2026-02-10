@@ -102,6 +102,8 @@ interface League {
   season: string;
   logo_url: string | null;
   status: string;
+  tournament_format?: 'league' | 'cup' | 'league_cup';
+  has_group_stage?: boolean;
 }
 
 interface Standing {
@@ -423,7 +425,15 @@ export default function StandingsPage() {
                   )}
                 </div>
                 <div>
-                  <h2 className="text-xl font-bold text-white">{currentLeague.name}</h2>
+                  <div className="flex items-center gap-2">
+                    <h2 className="text-xl font-bold text-white">{currentLeague.name}</h2>
+                    {(currentLeague.tournament_format === 'cup' || currentLeague.tournament_format === 'league_cup') && (
+                      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-xs font-bold bg-blue-500/20 text-blue-400 border border-blue-500/30">
+                        <span>🏅</span>
+                        Cup
+                      </span>
+                    )}
+                  </div>
                   <div className="flex items-center gap-3 mt-1">
                     <span className="text-sm text-slate-400">Musim {currentLeague.season}</span>
                     <span className="px-2 py-0.5 rounded text-xs font-bold shadow bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">
@@ -433,6 +443,16 @@ export default function StandingsPage() {
                 </div>
               </div>
               <div className="flex items-center gap-4">
+                {/* Show Cup Tournament Button if it's a cup format */}
+                {(currentLeague.tournament_format === 'cup' || currentLeague.tournament_format === 'league_cup') && (
+                  <Link
+                    href={`/cup?league=${currentLeague.id}`}
+                    className="flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors font-medium text-sm shadow-lg shadow-blue-500/25"
+                  >
+                    <span>🎯</span>
+                    <span>Lihat Tournament</span>
+                  </Link>
+                )}
                 <div className="text-center">
                   <p className="text-2xl font-bold text-white">{standings.length}</p>
                   <p className="text-xs text-slate-500">Tim</p>
@@ -453,6 +473,61 @@ export default function StandingsPage() {
             <div className="h-1 bg-slate-900/50">
               <div className="h-full bg-gradient-to-r from-emerald-500 via-blue-500 to-purple-500" style={{ width: '60%' }}></div>
             </div>
+          </div>
+        )}
+
+        {/* Cup Tournament Quick Access */}
+        {currentLeague && (currentLeague.tournament_format === 'cup' || currentLeague.tournament_format === 'league_cup') && (
+          <div className="mb-6 grid grid-cols-1 md:grid-cols-2 gap-4">
+            {/* Group Stage Card */}
+            {currentLeague.has_group_stage && (
+              <Link
+                href={`/cup?league=${currentLeague.id}`}
+                className="group relative overflow-hidden rounded-lg bg-gradient-to-br from-blue-600/20 to-blue-800/10 border border-blue-500/30 hover:border-blue-400/50 p-6 transition-all hover:shadow-lg hover:shadow-blue-500/20"
+              >
+                <div className="flex items-start justify-between mb-4">
+                  <div className="flex items-center gap-3">
+                    <div className="w-12 h-12 rounded-lg bg-blue-600/30 border border-blue-500/50 flex items-center justify-center text-2xl group-hover:scale-110 transition-transform">
+                      🎯
+                    </div>
+                    <div>
+                      <h3 className="text-lg font-bold text-white">Group Stage</h3>
+                      <p className="text-sm text-blue-300">Lihat standings per group</p>
+                    </div>
+                  </div>
+                  <svg className="w-5 h-5 text-blue-400 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
+                  </svg>
+                </div>
+                <div className="text-sm text-slate-300 opacity-80">
+                  View grup A, B, C, D dan qualified teams
+                </div>
+              </Link>
+            )}
+
+            {/* Knockout Bracket Card */}
+            <Link
+              href={`/cup?league=${currentLeague.id}`}
+              className="group relative overflow-hidden rounded-lg bg-gradient-to-br from-purple-600/20 to-purple-800/10 border border-purple-500/30 hover:border-purple-400/50 p-6 transition-all hover:shadow-lg hover:shadow-purple-500/20"
+            >
+              <div className="flex items-start justify-between mb-4">
+                <div className="flex items-center gap-3">
+                  <div className="w-12 h-12 rounded-lg bg-purple-600/30 border border-purple-500/50 flex items-center justify-center text-2xl group-hover:scale-110 transition-transform">
+                    🏆
+                  </div>
+                  <div>
+                    <h3 className="text-lg font-bold text-white">Knockout Bracket</h3>
+                    <p className="text-sm text-purple-300">Lihat bagan pertandingan</p>
+                  </div>
+                </div>
+                <svg className="w-5 h-5 text-purple-400 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
+                </svg>
+              </div>
+              <div className="text-sm text-slate-300 opacity-80">
+                View R16, QF, SF, dan Final matches
+              </div>
+            </Link>
           </div>
         )}
 

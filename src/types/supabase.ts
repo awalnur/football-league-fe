@@ -6,6 +6,9 @@
 export type LeagueType = 'football' | 'efootball';
 export type LeagueStatus = 'upcoming' | 'ongoing' | 'completed';
 export type MatchStatus = 'scheduled' | 'live' | 'completed' | 'postponed' | 'cancelled';
+export type TournamentFormat = 'league' | 'cup' | 'league_cup';
+export type CupStage = 'group_stage' | 'round_of_32' | 'round_of_16' | 'quarter_final' | 'semi_final' | 'final' | 'third_place';
+export type ZoneType = 'promotion' | 'safe' | 'playoff' | 'relegation';
 
 export interface Admin {
   id: string;
@@ -29,6 +32,17 @@ export interface League {
   created_by: string | null;
   created_at: string;
   updated_at: string;
+  // Tournament format & relegation
+  tournament_format: TournamentFormat;
+  promotion_slots: number;
+  relegation_slots: number;
+  playoff_slots: number;
+  parent_league_id: string | null;
+  child_league_id: string | null;  // NEW
+  // Cup specific
+  has_group_stage: boolean;
+  teams_per_group: number;
+  qualifiers_per_group: number;
 }
 
 export interface Team {
@@ -42,6 +56,7 @@ export interface Team {
   created_by: string | null;
   created_at: string;
   updated_at: string;
+  cup_group_id: string | null;
 }
 
 // Game Player / Gamer (untuk eFootball - orang yang bermain game)
@@ -74,6 +89,14 @@ export interface Match {
   created_by: string | null;
   created_at: string;
   updated_at: string;
+  // Cup specific
+  cup_stage: CupStage | null;
+  leg_number: number;
+  is_extra_time: boolean;
+  is_penalty: boolean;
+  home_penalty_score: number | null;
+  away_penalty_score: number | null;
+  aggregate_winner_id: string | null;
 }
 
 export interface MatchScreenshot {
@@ -101,6 +124,55 @@ export interface Standing {
   updated_at: string;
 }
 
+export interface LeagueZone {
+  id: string;
+  league_id: string;
+  zone_type: ZoneType;
+  position_start: number;
+  position_end: number;
+  color_code: string;
+  label: string;
+  created_at: string;
+}
+
+export interface CupGroup {
+  id: string;
+  league_id: string;
+  group_name: string;
+  created_at: string;
+}
+
+export interface CupStanding {
+  id: string;
+  cup_group_id: string;
+  team_id: string;
+  played: number;
+  won: number;
+  drawn: number;
+  lost: number;
+  goals_for: number;
+  goals_against: number;
+  goal_difference: number;
+  points: number;
+  qualified: boolean;
+  updated_at: string;
+}
+
+export type MovementType = 'promotion' | 'relegation' | 'playoff_winner' | 'playoff_loser' | 'transfer';
+
+export interface TeamMovement {
+  id: string;
+  team_id: string;
+  from_league_id: string;
+  to_league_id: string;
+  movement_type: MovementType;
+  season: string;
+  final_position: number | null;
+  notes: string | null;
+  movement_date: string;
+  created_at: string;
+}
+
 // ============================================
 // Extended Types with Relations
 // ============================================
@@ -122,6 +194,28 @@ export interface LeagueWithTeams extends League {
 export interface StandingWithTeam extends Standing {
   position: number;
   team: Team;
+  zone?: LeagueZone;  // Include zone information
+}
+
+export interface CupStandingWithTeam extends CupStanding {
+  position: number;
+  team: Team;
+}
+
+export interface CupGroupWithStandings extends CupGroup {
+  standings: CupStandingWithTeam[];
+}
+
+export interface TeamMovementWithDetails extends TeamMovement {
+  team: Team;
+  from_league: League;
+  to_league: League;
+}
+
+export interface LeagueWithHierarchy extends League {
+  parent_league?: League;
+  child_league?: League;
+  team_count?: number;
 }
 
 // ============================================
@@ -186,6 +280,16 @@ export interface CreateLeagueForm {
   description?: string;
   start_date?: string;
   end_date?: string;
+  // Tournament format
+  tournament_format?: TournamentFormat;
+  promotion_slots?: number;
+  relegation_slots?: number;
+  playoff_slots?: number;
+  parent_league_id?: string;
+  // Cup specific
+  has_group_stage?: boolean;
+  teams_per_group?: number;
+  qualifiers_per_group?: number;
 }
 
 export interface CreateTeamForm {

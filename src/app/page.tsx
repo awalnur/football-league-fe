@@ -304,8 +304,8 @@ export default function Home() {
                   recentLeagues.map((league) => (
                     <Link
                       key={league.id}
-                      href={`/standings?league=${league.id}`}
-                      className="flex items-center gap-3 px-4 py-3 hover:bg-slate-800/50 transition-colors"
+                      href={`/league/${league.id}`}
+                      className="flex items-center gap-3 px-4 py-3 hover:bg-slate-800/50 transition-colors group"
                     >
                       <div className={`flex h-10 w-10 items-center justify-center rounded-lg ${
                         league.type === 'efootball' 
@@ -325,14 +325,19 @@ export default function Home() {
                         )}
                       </div>
                       <div className="flex-1 min-w-0">
-                        <p className="text-sm font-medium text-white truncate">{league.name}</p>
+                        <p className="text-sm font-medium text-white truncate group-hover:text-blue-400 transition-colors">{league.name}</p>
                         <p className="text-xs text-slate-500">{league.type === 'efootball' ? 'eFootball' : 'Football'}</p>
                       </div>
-                      <span className={`text-xs px-2 py-0.5 rounded-full ${
-                        league.status === 'ongoing' ? 'bg-green-500/20 text-green-400' : 'bg-slate-700 text-slate-400'
-                      }`}>
-                        {league.status === 'ongoing' ? 'Live' : 'Draft'}
-                      </span>
+                      <div className="flex items-center gap-2">
+                        <span className={`text-xs px-2 py-0.5 rounded-full ${
+                          league.status === 'ongoing' ? 'bg-green-500/20 text-green-400' : 'bg-slate-700 text-slate-400'
+                        }`}>
+                          {league.status === 'ongoing' ? 'Live' : 'Draft'}
+                        </span>
+                        <svg className="w-4 h-4 text-slate-600 group-hover:text-blue-400 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
+                        </svg>
+                      </div>
                     </Link>
                   ))
                 )}

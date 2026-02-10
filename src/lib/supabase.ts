@@ -71,6 +71,14 @@ export async function createLeague(league: {
   description?: string;
   start_date?: string;
   end_date?: string;
+  tournament_format?: 'league' | 'cup' | 'league_cup';
+  promotion_slots?: number;
+  relegation_slots?: number;
+  playoff_slots?: number;
+  parent_league_id?: string;
+  has_group_stage?: boolean;
+  teams_per_group?: number;
+  qualifiers_per_group?: number;
 }) {
   const { data, error } = await supabase
     .from('leagues')
@@ -359,3 +367,316 @@ export async function uploadLeagueLogo(file: File, leagueId: string) {
 
   return { url: urlData.publicUrl, error: null };
 }
+
+// ============================================
+// League Zones Functions (Relegation/Promotion)
+// ============================================
+
+export async function getLeagueZones(leagueId: string) {
+  const { data, error } = await supabase
+    .from('league_zones')
+    .select('*')
+    .eq('league_id', leagueId)
+    .order('position_start', { ascending: true });
+  return { data, error };
+}
+
+export async function autoCreateLeagueZones(leagueId: string) {
+  const { data, error } = await supabase.rpc('auto_create_league_zones', {
+    p_league_id: leagueId,
+  } as any);
+  return { data, error };
+}
+
+// ============================================
+// Cup Groups Functions
+// ============================================
+
+export async function getCupGroups(leagueId: string) {
+  const { data, error } = await supabase
+    .from('cup_groups')
+    .select('*')
+    .eq('league_id', leagueId)
+    .order('group_name', { ascending: true });
+  return { data, error };
+}
+
+export async function createCupGroup(leagueId: string, groupName: string) {
+  const { data, error } = await supabase
+    .from('cup_groups')
+    .insert({ league_id: leagueId, group_name: groupName })
+    .select()
+    .single();
+  return { data, error };
+}
+
+export async function assignTeamToGroup(teamId: string, cupGroupId: string) {
+  const { data, error } = await supabase
+    .from('teams')
+    .update({ cup_group_id: cupGroupId })
+    .eq('id', teamId)
+    .select()
+    .single();
+  return { data, error };
+}
+
+export async function randomizeTeamsToGroups(leagueId: string) {
+  // Get all teams for the league
+  const { data: teams, error: teamsError } = await getTeamsByLeague(leagueId);
+  if (teamsError || !teams) return { data: null, error: teamsError };
+
+  // Get all groups for the league
+  const { data: groups, error: groupsError } = await getCupGroups(leagueId);
+  if (groupsError || !groups || groups.length === 0) {
+    return { data: null, error: { message: 'No groups found. Create groups first.' } };
+  }
+
+  // Get league info for teams_per_group
+  const { data: league, error: leagueError } = await getLeagueById(leagueId);
+  if (leagueError || !league) return { data: null, error: leagueError };
+
+  const teamsPerGroup = league.teams_per_group || 4;
+
+  // Shuffle teams randomly
+  const shuffledTeams = [...teams].sort(() => Math.random() - 0.5);
+
+  // Distribute teams to groups
+  const updates = [];
+  for (let i = 0; i < shuffledTeams.length; i++) {
+    const groupIndex = Math.floor(i / teamsPerGroup) % groups.length;
+    const group = groups[groupIndex];
+
+    updates.push(
+      supabase
+        .from('teams')
+        .update({ cup_group_id: group.id })
+        .eq('id', shuffledTeams[i].id)
+    );
+  }
+
+  // Execute all updates
+  await Promise.all(updates);
+
+  return { data: { success: true, teamsAssigned: shuffledTeams.length }, error: null };
+}
+
+export async function shuffleTeamsInGroups(leagueId: string) {
+  // Get all groups for the league
+  const { data: groups, error: groupsError } = await getCupGroups(leagueId);
+  if (groupsError || !groups || groups.length === 0) {
+    return { data: null, error: { message: 'No groups found.' } };
+  }
+
+  // Get all teams for the league
+  const { data: teams, error: teamsError } = await getTeamsByLeague(leagueId);
+  if (teamsError || !teams) return { data: null, error: teamsError };
+
+  // Shuffle teams within each group
+  for (const group of groups) {
+    const groupTeams = teams.filter(t => t.cup_group_id === group.id);
+
+    if (groupTeams.length > 0) {
+      // Shuffle team order by reassigning them
+      const shuffledTeams = [...groupTeams].sort(() => Math.random() - 0.5);
+
+      // Update teams (this will affect the display order when sorted by name or created_at)
+      // Since we can't directly control display order, we'll just reassign them
+      // The shuffle effect will be visible when teams are re-fetched
+      for (const team of shuffledTeams) {
+        await supabase
+          .from('teams')
+          .update({
+            cup_group_id: group.id,
+            updated_at: new Date().toISOString()
+          })
+          .eq('id', team.id);
+
+        // Small delay to ensure different timestamps
+        await new Promise(resolve => setTimeout(resolve, 10));
+      }
+    }
+  }
+
+  return { data: { success: true, groupsShuffled: groups.length }, error: null };
+}
+
+export async function clearAllGroupAssignments(leagueId: string) {
+  const { error } = await supabase
+    .from('teams')
+    .update({ cup_group_id: null })
+    .eq('league_id', leagueId);
+
+  return { error };
+}
+
+// ============================================
+// Cup Standings Functions
+// ============================================
+
+export async function getCupStandings(cupGroupId: string) {
+  const { data, error } = await supabase
+    .from('cup_standings')
+    .select(`
+      *,
+      team:teams(*)
+    `)
+    .eq('cup_group_id', cupGroupId)
+    .order('points', { ascending: false })
+    .order('goal_difference', { ascending: false })
+    .order('goals_for', { ascending: false });
+  return { data, error };
+}
+
+export async function getCupGroupsWithStandings(leagueId: string) {
+  // Get all groups for this league
+  const { data: groups, error: groupError } = await getCupGroups(leagueId);
+  if (groupError || !groups) return { data: null, error: groupError };
+
+  // Get standings for each group
+  const groupsWithStandings = await Promise.all(
+    groups.map(async (group) => {
+      const { data: standings, error: standingsError } = await getCupStandings(group.id);
+      return {
+        ...group,
+        standings: standings?.map((s, idx) => ({ ...s, position: idx + 1 })) || [],
+      };
+    })
+  );
+
+  return { data: groupsWithStandings, error: null };
+}
+
+// ============================================
+// Enhanced Standings with Zones
+// ============================================
+
+export async function getStandingsWithZones(leagueId: string) {
+  // Get regular standings
+  const { data: standings, error: standingsError } = await supabase
+    .from('standings')
+    .select(`
+      *,
+      team:teams(*)
+    `)
+    .eq('league_id', leagueId)
+    .order('points', { ascending: false })
+    .order('goal_difference', { ascending: false })
+    .order('goals_for', { ascending: false });
+
+  if (standingsError || !standings) return { data: null, error: standingsError };
+
+  // Get zones
+  const { data: zones, error: zonesError } = await getLeagueZones(leagueId);
+  if (zonesError) return { data: standings, error: null }; // Return standings without zones if zones fail
+
+  // Attach zone to each standing based on position
+  const standingsWithZones = standings.map((standing, idx) => {
+    const position = idx + 1;
+    const zone = zones?.find(z => position >= z.position_start && position <= z.position_end);
+    return {
+      ...standing,
+      position,
+      zone,
+    };
+  });
+
+  return { data: standingsWithZones, error: null };
+}
+
+// ============================================
+// Team Movements & Promotion/Relegation
+// ============================================
+
+export async function getTeamMovements(teamId?: string, season?: string) {
+  let query = supabase
+    .from('team_movements')
+    .select(`
+      *,
+      team:teams(*),
+      from_league:leagues!team_movements_from_league_id_fkey(*),
+      to_league:leagues!team_movements_to_league_id_fkey(*)
+    `)
+    .order('movement_date', { ascending: false });
+
+  if (teamId) {
+    query = query.eq('team_id', teamId);
+  }
+  if (season) {
+    query = query.eq('season', season);
+  }
+
+  const { data, error } = await query;
+  return { data, error };
+}
+
+export async function getLeagueHierarchy() {
+  const { data, error } = await supabase
+    .from('league_hierarchy')
+    .select('*')
+    .order('name', { ascending: true });
+
+  return { data, error };
+}
+
+export async function getPromotionEligibleTeams(leagueId: string) {
+  const { data, error } = await supabase.rpc('get_promotion_eligible_teams', {
+    p_league_id: leagueId,
+  } as any);
+  return { data, error };
+}
+
+export async function getRelegationEligibleTeams(leagueId: string) {
+  const { data, error } = await supabase.rpc('get_relegation_eligible_teams', {
+    p_league_id: leagueId,
+  } as any);
+  return { data, error };
+}
+
+export async function executeSeasonEndMovements(leagueId: string, season: string) {
+  const { data, error } = await supabase.rpc('execute_season_end_movements', {
+    p_league_id: leagueId,
+    p_season: season,
+  } as any);
+  return { data, error };
+}
+
+export async function recordTeamMovement(
+  teamId: string,
+  fromLeagueId: string,
+  toLeagueId: string,
+  movementType: 'promotion' | 'relegation' | 'playoff_winner' | 'playoff_loser' | 'transfer',
+  season: string,
+  finalPosition?: number,
+  notes?: string
+) {
+  const { data, error } = await supabase
+    .from('team_movements')
+    .insert({
+      team_id: teamId,
+      from_league_id: fromLeagueId,
+      to_league_id: toLeagueId,
+      movement_type: movementType,
+      season: season,
+      final_position: finalPosition,
+      notes: notes,
+    })
+    .select()
+    .single();
+
+  return { data, error };
+}
+
+export async function getLeagueWithHierarchy(leagueId: string) {
+  const { data: league, error } = await supabase
+    .from('leagues')
+    .select(`
+      *,
+      parent_league:leagues!leagues_parent_league_id_fkey(*),
+      child_league:leagues!leagues_child_league_id_fkey(*)
+    `)
+    .eq('id', leagueId)
+    .single();
+
+  return { data: league, error };
+}
+

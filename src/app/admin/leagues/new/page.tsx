@@ -19,6 +19,13 @@ export default function NewLeaguePage() {
     description: '',
     start_date: '',
     end_date: '',
+    tournament_format: 'league' as 'league' | 'cup' | 'league_cup',
+    promotion_slots: 0,
+    relegation_slots: 0,
+    playoff_slots: 0,
+    has_group_stage: false,
+    teams_per_group: 4,
+    qualifiers_per_group: 2,
   });
 
   const handleLogoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -189,6 +196,145 @@ export default function NewLeaguePage() {
             className="w-full px-4 py-3 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent resize-none"
           />
         </div>
+
+        {/* Tournament Format */}
+        <div>
+          <label className="block text-sm font-medium text-gray-300 mb-2">Format Turnamen *</label>
+          <div className="grid grid-cols-3 gap-4">
+            <button
+              type="button"
+              onClick={() => setFormData({ ...formData, tournament_format: 'league' })}
+              className={`p-4 rounded-lg border-2 transition-colors ${
+                formData.tournament_format === 'league'
+                  ? 'border-green-500 bg-green-600/20'
+                  : 'border-gray-600 bg-gray-700 hover:border-gray-500'
+              }`}
+            >
+              <span className="text-3xl block mb-2">🏆</span>
+              <span className="text-white font-medium block">Liga</span>
+              <p className="text-xs text-gray-400 mt-1">Round-robin</p>
+            </button>
+            <button
+              type="button"
+              onClick={() => setFormData({ ...formData, tournament_format: 'cup' })}
+              className={`p-4 rounded-lg border-2 transition-colors ${
+                formData.tournament_format === 'cup'
+                  ? 'border-blue-500 bg-blue-600/20'
+                  : 'border-gray-600 bg-gray-700 hover:border-gray-500'
+              }`}
+            >
+              <span className="text-3xl block mb-2">🏅</span>
+              <span className="text-white font-medium block">Piala</span>
+              <p className="text-xs text-gray-400 mt-1">Knockout</p>
+            </button>
+            <button
+              type="button"
+              onClick={() => setFormData({ ...formData, tournament_format: 'league_cup' })}
+              className={`p-4 rounded-lg border-2 transition-colors ${
+                formData.tournament_format === 'league_cup'
+                  ? 'border-purple-500 bg-purple-600/20'
+                  : 'border-gray-600 bg-gray-700 hover:border-gray-500'
+              }`}
+            >
+              <span className="text-3xl block mb-2">⚡</span>
+              <span className="text-white font-medium block">Hybrid</span>
+              <p className="text-xs text-gray-400 mt-1">Liga + Cup</p>
+            </button>
+          </div>
+        </div>
+
+        {/* League Format - Relegation Settings */}
+        {formData.tournament_format === 'league' && (
+          <div className="bg-gray-700/50 p-4 rounded-lg space-y-4 border border-gray-600">
+            <h3 className="text-white font-medium flex items-center gap-2">
+              <span>⬆️⬇️</span>
+              Pengaturan Promosi & Degradasi
+            </h3>
+            <div className="grid grid-cols-3 gap-4">
+              <div>
+                <label className="block text-xs text-gray-400 mb-1">Slot Promosi</label>
+                <input
+                  type="number"
+                  min="0"
+                  value={formData.promotion_slots}
+                  onChange={(e) => setFormData({ ...formData, promotion_slots: parseInt(e.target.value) || 0 })}
+                  className="w-full px-3 py-2 bg-gray-600 border border-gray-500 rounded text-white focus:outline-none focus:ring-2 focus:ring-green-500"
+                />
+                <p className="text-xs text-gray-500 mt-1">Tim promosi langsung</p>
+              </div>
+              <div>
+                <label className="block text-xs text-gray-400 mb-1">Slot Playoff</label>
+                <input
+                  type="number"
+                  min="0"
+                  value={formData.playoff_slots}
+                  onChange={(e) => setFormData({ ...formData, playoff_slots: parseInt(e.target.value) || 0 })}
+                  className="w-full px-3 py-2 bg-gray-600 border border-gray-500 rounded text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+                />
+                <p className="text-xs text-gray-500 mt-1">Tim masuk playoff</p>
+              </div>
+              <div>
+                <label className="block text-xs text-gray-400 mb-1">Slot Degradasi</label>
+                <input
+                  type="number"
+                  min="0"
+                  value={formData.relegation_slots}
+                  onChange={(e) => setFormData({ ...formData, relegation_slots: parseInt(e.target.value) || 0 })}
+                  className="w-full px-3 py-2 bg-gray-600 border border-gray-500 rounded text-white focus:outline-none focus:ring-2 focus:ring-red-500"
+                />
+                <p className="text-xs text-gray-500 mt-1">Tim degradasi langsung</p>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Cup Format - Group Stage Settings */}
+        {(formData.tournament_format === 'cup' || formData.tournament_format === 'league_cup') && (
+          <div className="bg-gray-700/50 p-4 rounded-lg space-y-4 border border-gray-600">
+            <div className="flex items-center justify-between">
+              <h3 className="text-white font-medium flex items-center gap-2">
+                <span>🎯</span>
+                Pengaturan Format Cup
+              </h3>
+              <label className="flex items-center gap-2 cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={formData.has_group_stage}
+                  onChange={(e) => setFormData({ ...formData, has_group_stage: e.target.checked })}
+                  className="w-4 h-4 rounded bg-gray-600 border-gray-500 text-blue-500 focus:ring-2 focus:ring-blue-500"
+                />
+                <span className="text-sm text-gray-300">Pakai Group Stage</span>
+              </label>
+            </div>
+
+            {formData.has_group_stage && (
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-xs text-gray-400 mb-1">Tim per Group</label>
+                  <input
+                    type="number"
+                    min="2"
+                    max="8"
+                    value={formData.teams_per_group}
+                    onChange={(e) => setFormData({ ...formData, teams_per_group: parseInt(e.target.value) || 4 })}
+                    className="w-full px-3 py-2 bg-gray-600 border border-gray-500 rounded text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs text-gray-400 mb-1">Tim Lolos per Group</label>
+                  <input
+                    type="number"
+                    min="1"
+                    max="4"
+                    value={formData.qualifiers_per_group}
+                    onChange={(e) => setFormData({ ...formData, qualifiers_per_group: parseInt(e.target.value) || 2 })}
+                    className="w-full px-3 py-2 bg-gray-600 border border-gray-500 rounded text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  />
+                </div>
+              </div>
+            )}
+          </div>
+        )}
 
         {/* Date Range */}
         <div className="grid grid-cols-2 gap-4">
