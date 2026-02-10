@@ -6,6 +6,8 @@ import { useState, useEffect, useCallback } from 'react';
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
 import { getLeagues, getTeamsByLeague, supabase } from '@/lib/supabase';
+import LoadingState from '@/components/LoadingState';
+import EmptyState from '@/components/EmptyState';
 
 interface Team {
   id: string;
@@ -127,34 +129,31 @@ export default function TeamsPage() {
 
       {/* Teams Grid */}
       {loading ? (
-        <div className="flex items-center justify-center min-h-[300px]">
-          <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-emerald-500"></div>
-        </div>
+        <LoadingState message="Loading teams..." />
       ) : !selectedLeague ? (
-        <div className="bg-slate-900 rounded-lg p-12 text-center border border-slate-800">
-          <svg className="w-16 h-16 mx-auto mb-4 text-slate-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.5}>
-            <path strokeLinecap="round" strokeLinejoin="round" d="M8 7l4-4m0 0l4 4m-4-4v18" />
-          </svg>
-          <h2 className="text-xl font-semibold text-white mb-2">Pilih Liga</h2>
-          <p className="text-slate-400">Pilih liga terlebih dahulu untuk melihat tim</p>
-        </div>
-      ) : teams.length === 0 ? (
-        <div className="bg-slate-900 rounded-lg p-12 text-center border border-slate-800">
-          <svg className="w-16 h-16 mx-auto mb-4 text-slate-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.5}>
-            <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
-          </svg>
-          <h2 className="text-xl font-semibold text-white mb-2">Belum Ada Tim</h2>
-          <p className="text-slate-400 mb-6">Tambahkan tim untuk liga {currentLeague?.name}</p>
-          <Link
-            href={`/admin/teams/new?league=${selectedLeague}`}
-            className="inline-flex items-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white px-6 py-3 rounded-lg transition-colors"
-          >
-            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
-              <path strokeLinecap="round" strokeLinejoin="round" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+        <EmptyState
+          title="Select a League"
+          description="Choose a league to view and manage teams"
+          icon={
+            <svg className="w-16 h-16" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.5}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M8 7l4-4m0 0l4 4m-4-4v18" />
             </svg>
-            Tambah Tim Pertama
-          </Link>
-        </div>
+          }
+        />
+      ) : teams.length === 0 ? (
+        <EmptyState
+          title="No Teams Yet"
+          description={`Add teams to ${currentLeague?.name || 'this league'}`}
+          icon={
+            <svg className="w-16 h-16" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.5}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
+            </svg>
+          }
+          action={{
+            label: 'Add First Team',
+            onClick: () => window.location.href = `/admin/teams/new?league=${selectedLeague}`
+          }}
+        />
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {teams.map((team) => (

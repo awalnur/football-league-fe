@@ -1,6 +1,5 @@
 import type { Metadata } from "next";
 import "./globals.css";
-import { LeagueProvider } from "@/context/LeagueContext";
 
 export const metadata: Metadata = {
   title: "Delameta e-Football Leagues",
@@ -15,9 +14,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className="antialiased">
-        <LeagueProvider>
-          {children}
-        </LeagueProvider>
+        {children}
       </body>
     </html>
   );
