@@ -34,20 +34,6 @@ export default function SchedulePage() {
   const [loading, setLoading] = useState(true);
   const [teamsCount, setTeamsCount] = useState(0);
 
-  useEffect(() => {
-    loadLeagues();
-  }, []);
-
-  useEffect(() => {
-    if (selectedLeague) {
-      loadSchedule(selectedLeague);
-      loadTeamsCount(selectedLeague);
-    } else {
-      setMatches([]);
-      setLoading(false);
-    }
-  }, [selectedLeague]);
-
   async function loadLeagues() {
     const { data } = await getLeagues();
     if (data) {
@@ -76,6 +62,20 @@ export default function SchedulePage() {
       setTeamsCount(data.length);
     }
   }
+
+  useEffect(() => {
+    loadLeagues();
+  }, []);
+
+  useEffect(() => {
+    if (selectedLeague) {
+      loadSchedule(selectedLeague);
+      loadTeamsCount(selectedLeague);
+    } else {
+      setMatches([]);
+      setLoading(false);
+    }
+  }, [selectedLeague]);
 
   const currentLeague = leagues.find(l => l.id === selectedLeague);
 

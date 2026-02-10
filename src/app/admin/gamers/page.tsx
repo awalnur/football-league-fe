@@ -41,27 +41,6 @@ export default function GamersPage() {
   const [loading, setLoading] = useState(true);
   const [deleting, setDeleting] = useState<string | null>(null);
 
-  useEffect(() => {
-    loadLeagues();
-  }, []);
-
-  useEffect(() => {
-    if (selectedLeague) {
-      loadTeams(selectedLeague);
-    } else {
-      setTeams([]);
-      setSelectedTeam('');
-    }
-  }, [selectedLeague]);
-
-  useEffect(() => {
-    if (selectedTeam) {
-      loadGamers(selectedTeam);
-    } else {
-      setGamers([]);
-    }
-  }, [selectedTeam]);
-
   async function loadLeagues() {
     const { data } = await getLeagues();
     if (data) {
@@ -94,6 +73,27 @@ export default function GamersPage() {
     }
     setLoading(false);
   }
+
+  useEffect(() => {
+    loadLeagues();
+  }, []);
+
+  useEffect(() => {
+    if (selectedLeague) {
+      loadTeams(selectedLeague);
+    } else {
+      setTeams([]);
+      setSelectedTeam('');
+    }
+  }, [selectedLeague]);
+
+  useEffect(() => {
+    if (selectedTeam) {
+      loadGamers(selectedTeam);
+    } else {
+      setGamers([]);
+    }
+  }, [selectedTeam]);
 
   async function handleDelete(id: string, name: string) {
     if (!confirm(`Yakin ingin menghapus gamer "${name}"?`)) return;

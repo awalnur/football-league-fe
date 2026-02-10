@@ -29,19 +29,6 @@ export default function MatchesPage() {
   const [filter, setFilter] = useState<'all' | 'scheduled' | 'completed'>('all');
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    loadLeagues();
-  }, []);
-
-  useEffect(() => {
-    if (selectedLeague) {
-      loadMatches(selectedLeague);
-    } else {
-      setMatches([]);
-      setLoading(false);
-    }
-  }, [selectedLeague]);
-
   async function loadLeagues() {
     const { data } = await getLeagues();
     if (data) {
@@ -61,6 +48,19 @@ export default function MatchesPage() {
     }
     setLoading(false);
   }
+
+  useEffect(() => {
+    loadLeagues();
+  }, []);
+
+  useEffect(() => {
+    if (selectedLeague) {
+      loadMatches(selectedLeague);
+    } else {
+      setMatches([]);
+      setLoading(false);
+    }
+  }, [selectedLeague]);
 
   const currentLeague = leagues.find(l => l.id === selectedLeague);
 

@@ -30,19 +30,6 @@ export default function TeamsPage() {
   const [loading, setLoading] = useState(true);
   const [deleting, setDeleting] = useState<string | null>(null);
 
-  useEffect(() => {
-    loadLeagues();
-  }, []);
-
-  useEffect(() => {
-    if (selectedLeague) {
-      loadTeams(selectedLeague);
-    } else {
-      setTeams([]);
-      setLoading(false);
-    }
-  }, [selectedLeague]);
-
   async function loadLeagues() {
     const { data } = await getLeagues();
     if (data) {
@@ -64,6 +51,19 @@ export default function TeamsPage() {
     }
     setLoading(false);
   }
+
+  useEffect(() => {
+    loadLeagues();
+  }, []);
+
+  useEffect(() => {
+    if (selectedLeague) {
+      loadTeams(selectedLeague);
+    } else {
+      setTeams([]);
+      setLoading(false);
+    }
+  }, [selectedLeague]);
 
   async function handleDelete(id: string, name: string) {
     if (!confirm(`Yakin ingin menghapus tim "${name}"?`)) return;
