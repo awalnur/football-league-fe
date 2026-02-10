@@ -288,7 +288,6 @@ interface TournamentBracketProps {
 // EnhancedCupGroupStandings
 interface EnhancedCupGroupStandingsProps {
   groups: CupGroupWithStandings[];
-  leagueType: 'football' | 'efootball';
 }
 ```
 
