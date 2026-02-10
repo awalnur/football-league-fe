@@ -54,7 +54,7 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-900 flex items-center justify-center p-4">
+    <div className="min-h-screen bg-slate-900 flex items-center justify-center p-4">
       <div className="w-full max-w-md">
         {/* Logo */}
         <div className="text-center mb-8">
@@ -62,13 +62,13 @@ export default function LoginPage() {
             <span className="text-5xl">⚽</span>
             <div className="text-left">
               <h1 className="text-2xl font-bold text-white">League Admin</h1>
-              <p className="text-sm text-gray-400">Management System</p>
+              <p className="text-sm text-slate-400">Management System</p>
             </div>
           </Link>
         </div>
 
         {/* Form Card */}
-        <div className="bg-gray-800 rounded-2xl p-8 border border-gray-700 shadow-2xl">
+        <div className="bg-slate-800 rounded-2xl p-8 border border-slate-700 shadow-2xl">
           <h2 className="text-xl font-semibold text-white text-center mb-6">
             {mode === 'login' ? 'Login Admin' : 'Registrasi'}
           </h2>
@@ -87,39 +87,39 @@ export default function LoginPage() {
 
           <form onSubmit={handleSubmit} className="space-y-5">
             <div>
-              <label className="block text-sm font-medium text-gray-300 mb-2">Email</label>
+              <label className="block text-sm font-medium text-slate-300 mb-2">Email</label>
               <input
                 type="email"
                 required
                 value={formData.email}
                 onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                 placeholder="admin@example.com"
-                className="w-full px-4 py-3 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                className="w-full px-4 py-3 bg-slate-700 border border-slate-600 rounded-lg text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
               />
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-300 mb-2">Password</label>
+              <label className="block text-sm font-medium text-slate-300 mb-2">Password</label>
               <input
                 type="password"
                 required
                 value={formData.password}
                 onChange={(e) => setFormData({ ...formData, password: e.target.value })}
                 placeholder="••••••••"
-                className="w-full px-4 py-3 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                className="w-full px-4 py-3 bg-slate-700 border border-slate-600 rounded-lg text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
               />
             </div>
 
             {mode === 'register' && (
               <div>
-                <label className="block text-sm font-medium text-gray-300 mb-2">Konfirmasi Password</label>
+                <label className="block text-sm font-medium text-slate-300 mb-2">Konfirmasi Password</label>
                 <input
                   type="password"
                   required
                   value={formData.confirmPassword}
                   onChange={(e) => setFormData({ ...formData, confirmPassword: e.target.value })}
                   placeholder="••••••••"
-                  className="w-full px-4 py-3 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                  className="w-full px-4 py-3 bg-slate-700 border border-slate-600 rounded-lg text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
                 />
               </div>
             )}
@@ -142,7 +142,7 @@ export default function LoginPage() {
 
           <div className="mt-6 text-center">
             {mode === 'login' ? (
-              <p className="text-gray-400 text-sm">
+              <p className="text-slate-400 text-sm">
                 Belum punya akun?{' '}
                 <button
                   onClick={() => {
@@ -156,7 +156,7 @@ export default function LoginPage() {
                 </button>
               </p>
             ) : (
-              <p className="text-gray-400 text-sm">
+              <p className="text-slate-400 text-sm">
                 Sudah punya akun?{' '}
                 <button
                   onClick={() => {
@@ -175,10 +175,10 @@ export default function LoginPage() {
 
         {/* Info */}
         <div className="mt-6 text-center">
-          <p className="text-gray-500 text-sm">
+          <p className="text-slate-500 text-sm">
             Hanya user dengan akses admin yang dapat masuk ke dashboard.
           </p>
-          <Link href="/" className="text-gray-400 hover:text-gray-300 text-sm mt-2 inline-block">
+          <Link href="/" className="text-slate-400 hover:text-slate-300 text-sm mt-2 inline-block">
             ← Kembali ke Beranda
           </Link>
         </div>

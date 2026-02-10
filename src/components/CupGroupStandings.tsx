@@ -30,7 +30,7 @@ export default function CupGroupStandings({ groups }: CupGroupStandingsProps) {
       {groups.map((group) => (
         <div
           key={group.id}
-          className="overflow-hidden rounded-2xl border border-gray-700 bg-gray-800 shadow-xl"
+          className="overflow-hidden rounded-2xl border border-slate-700 bg-slate-800 shadow-xl"
         >
           {/* Group Header */}
           <div className="bg-gradient-to-r from-indigo-600 to-purple-600 px-4 py-3">
@@ -40,8 +40,8 @@ export default function CupGroupStandings({ groups }: CupGroupStandingsProps) {
           </div>
 
           {/* Standings Table */}
-          <div className="bg-gray-900 px-4 py-3">
-            <div className="grid grid-cols-12 gap-2 text-xs font-semibold uppercase tracking-wider text-gray-400">
+          <div className="bg-slate-900 px-4 py-3">
+            <div className="grid grid-cols-12 gap-2 text-xs font-semibold uppercase tracking-wider text-slate-400">
               <div className="col-span-1 text-center">#</div>
               <div className="col-span-3">Tim</div>
               <div className="col-span-1 text-center">M</div>
@@ -62,7 +62,7 @@ export default function CupGroupStandings({ groups }: CupGroupStandingsProps) {
               return (
                 <div
                   key={standing.id}
-                  className={`transition-colors hover:bg-gray-700/50 px-4 py-3 ${
+                  className={`transition-colors hover:bg-slate-700/50 px-4 py-3 ${
                     isQualified ? 'bg-green-900/10 border-l-4 border-green-500' : 'border-l-4 border-transparent'
                   }`}
                 >
@@ -81,8 +81,8 @@ export default function CupGroupStandings({ groups }: CupGroupStandingsProps) {
                           className="h-6 w-6 flex-shrink-0 rounded object-contain"
                          width={24} height={24} />
                       ) : (
-                        <div className="h-6 w-6 flex-shrink-0 rounded bg-gray-700 flex items-center justify-center">
-                          <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <div className="h-6 w-6 flex-shrink-0 rounded bg-slate-700 flex items-center justify-center">
+                          <svg className="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
                           </svg>
                         </div>
@@ -98,7 +98,7 @@ export default function CupGroupStandings({ groups }: CupGroupStandingsProps) {
                     </div>
 
                     {/* Matches Played */}
-                    <div className="col-span-1 text-center text-gray-300">
+                    <div className="col-span-1 text-center text-slate-300">
                       {standing.played}
                     </div>
 
@@ -120,7 +120,7 @@ export default function CupGroupStandings({ groups }: CupGroupStandingsProps) {
                     {/* Goal Difference */}
                     <div className={`col-span-1 text-center font-semibold hidden sm:block ${
                       standing.goal_difference > 0 ? 'text-green-400' :
-                      standing.goal_difference < 0 ? 'text-red-400' : 'text-gray-400'
+                      standing.goal_difference < 0 ? 'text-red-400' : 'text-slate-400'
                     }`}>
                       {standing.goal_difference > 0 ? '+' : ''}{standing.goal_difference}
                     </div>
@@ -139,8 +139,8 @@ export default function CupGroupStandings({ groups }: CupGroupStandingsProps) {
 
           {/* Qualification Legend */}
           {group.standings.some(s => s.qualified) && (
-            <div className="border-t border-gray-700 bg-gray-900/50 px-4 py-3">
-              <div className="flex items-center gap-2 text-xs text-gray-400">
+            <div className="border-t border-slate-700 bg-slate-900/50 px-4 py-3">
+              <div className="flex items-center gap-2 text-xs text-slate-400">
                 <div className="h-3 w-3 rounded-full bg-green-500"></div>
                 <span>Lolos ke fase berikutnya</span>
               </div>

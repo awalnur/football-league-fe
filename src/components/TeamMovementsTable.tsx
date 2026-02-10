@@ -25,9 +25,9 @@ export default function TeamMovementsTable({
       case 'playoff_loser':
         return { icon: '💔', color: 'text-orange-400', label: 'Playoff Loss' };
       case 'transfer':
-        return { icon: '↔️', color: 'text-gray-400', label: 'Transfer' };
+        return { icon: '↔️', color: 'text-slate-400', label: 'Transfer' };
       default:
-        return { icon: '❓', color: 'text-gray-400', label: 'Unknown' };
+        return { icon: '❓', color: 'text-slate-400', label: 'Unknown' };
     }
   };
 
@@ -42,23 +42,23 @@ export default function TeamMovementsTable({
 
   if (movements.length === 0) {
     return (
-      <div className="bg-gray-800 border border-gray-700 rounded-lg p-8 text-center">
-        <p className="text-gray-400">Belum ada riwayat perpindahan tim</p>
+      <div className="bg-slate-800 border border-slate-700 rounded-lg p-8 text-center">
+        <p className="text-slate-400">Belum ada riwayat perpindahan tim</p>
       </div>
     );
   }
 
   return (
-    <div className="overflow-hidden rounded-xl border border-gray-700 bg-gray-800">
+    <div className="overflow-hidden rounded-xl border border-slate-700 bg-slate-800">
       {/* Header */}
-      <div className="bg-gray-900 px-4 py-3">
+      <div className="bg-slate-900 px-4 py-3">
         <h3 className="text-lg font-semibold text-white">Riwayat Perpindahan Tim</h3>
       </div>
 
       {/* Table */}
       <div className="overflow-x-auto">
         <table className="w-full text-sm">
-          <thead className="bg-gray-900/50 text-xs text-gray-400 border-b border-gray-700">
+          <thead className="bg-slate-900/50 text-xs text-slate-400 border-b border-slate-700">
             <tr>
               <th className="px-4 py-3 text-left">Musim</th>
               {showTeamColumn && <th className="px-4 py-3 text-left">Tim</th>}
@@ -77,7 +77,7 @@ export default function TeamMovementsTable({
               return (
                 <tr
                   key={movement.id}
-                  className="hover:bg-gray-700/50 transition-colors"
+                  className="hover:bg-slate-700/50 transition-colors"
                 >
                   <td className="px-4 py-3 font-medium text-white">
                     {movement.season}
@@ -106,25 +106,25 @@ export default function TeamMovementsTable({
                       <span className="hidden sm:inline">{movementInfo.label}</span>
                     </span>
                   </td>
-                  <td className="px-4 py-3 text-gray-300 max-w-[120px] truncate">
+                  <td className="px-4 py-3 text-slate-300 max-w-[120px] truncate">
                     {movement.from_league.name}
                   </td>
-                  <td className="px-4 py-3 text-center text-gray-500">
+                  <td className="px-4 py-3 text-center text-slate-500">
                     →
                   </td>
-                  <td className="px-4 py-3 text-gray-300 max-w-[120px] truncate">
+                  <td className="px-4 py-3 text-slate-300 max-w-[120px] truncate">
                     {movement.to_league.name}
                   </td>
                   <td className="px-4 py-3 text-center hidden md:table-cell">
                     {movement.final_position ? (
-                      <span className="inline-flex items-center justify-center w-8 h-8 rounded-full bg-gray-700 text-white font-semibold text-xs">
+                      <span className="inline-flex items-center justify-center w-8 h-8 rounded-full bg-slate-700 text-white font-semibold text-xs">
                         {movement.final_position}
                       </span>
                     ) : (
-                      <span className="text-gray-500">-</span>
+                      <span className="text-slate-500">-</span>
                     )}
                   </td>
-                  <td className="px-4 py-3 text-gray-400 hidden lg:table-cell">
+                  <td className="px-4 py-3 text-slate-400 hidden lg:table-cell">
                     {formatDate(movement.movement_date)}
                   </td>
                 </tr>
@@ -136,14 +136,14 @@ export default function TeamMovementsTable({
 
       {/* Notes Section (if any movement has notes) */}
       {movements.some(m => m.notes) && (
-        <div className="bg-gray-900/30 px-4 py-3 border-t border-gray-700">
+        <div className="bg-slate-900/30 px-4 py-3 border-t border-slate-700">
           <div className="space-y-2">
             {movements
               .filter(m => m.notes)
               .slice(0, 3)
               .map((movement) => (
-                <div key={movement.id} className="text-xs text-gray-400">
-                  <span className="font-medium text-gray-300">{movement.team.name}:</span>{' '}
+                <div key={movement.id} className="text-xs text-slate-400">
+                  <span className="font-medium text-slate-300">{movement.team.name}:</span>{' '}
                   {movement.notes}
                 </div>
               ))}

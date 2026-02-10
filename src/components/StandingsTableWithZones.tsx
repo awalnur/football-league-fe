@@ -32,10 +32,10 @@ export default function StandingsTableWithZones({
   };
 
   return (
-    <div className="overflow-hidden rounded-2xl border border-gray-700 bg-gray-800 shadow-xl">
+    <div className="overflow-hidden rounded-2xl border border-slate-700 bg-slate-800 shadow-xl">
       {/* Header */}
-      <div className="bg-gray-900 px-4 sm:px-6 py-4">
-        <div className="grid grid-cols-12 gap-2 text-xs font-semibold uppercase tracking-wider text-gray-400">
+      <div className="bg-slate-900 px-4 sm:px-6 py-4">
+        <div className="grid grid-cols-12 gap-2 text-xs font-semibold uppercase tracking-wider text-slate-400">
           <div className="col-span-1 text-center">#</div>
           <div className="col-span-4 sm:col-span-3">Team</div>
           <div className="col-span-1 text-center hidden sm:block" title="Played">P</div>
@@ -58,7 +58,7 @@ export default function StandingsTableWithZones({
             <div
               key={standing.id}
               role="row"
-              className={`grid grid-cols-12 gap-2 px-4 sm:px-6 py-3 sm:py-4 transition-all duration-300 hover:bg-gray-700/50 ${getPositionStyle(position, standing.zone)}`}
+              className={`grid grid-cols-12 gap-2 px-4 sm:px-6 py-3 sm:py-4 transition-all duration-300 hover:bg-slate-700/50 ${getPositionStyle(position, standing.zone)}`}
               style={standing.zone ? {
                 borderLeftColor: standing.zone.color_code,
                 background: `linear-gradient(to right, ${standing.zone.color_code}20, transparent)`
@@ -94,13 +94,13 @@ export default function StandingsTableWithZones({
                   )}
                 </div>
               </div>
-              <div className="col-span-1 items-center justify-center text-gray-400 text-sm hidden sm:flex" role="cell">
+              <div className="col-span-1 items-center justify-center text-slate-400 text-sm hidden sm:flex" role="cell">
                 {standing.played}
               </div>
               <div className="col-span-1 flex items-center justify-center font-medium text-emerald-400 text-sm" role="cell">
                 {standing.won}
               </div>
-              <div className="col-span-1 items-center justify-center text-gray-400 text-sm hidden sm:flex" role="cell">
+              <div className="col-span-1 items-center justify-center text-slate-400 text-sm hidden sm:flex" role="cell">
                 {standing.drawn}
               </div>
               <div className="col-span-1 flex items-center justify-center font-medium text-red-400 text-sm" role="cell">
@@ -113,7 +113,7 @@ export default function StandingsTableWithZones({
                       ? 'bg-emerald-900/30 text-emerald-400'
                       : standing.goal_difference < 0
                       ? 'bg-red-900/30 text-red-400'
-                      : 'bg-gray-700 text-gray-300'
+                      : 'bg-slate-700 text-slate-300'
                   }`}
                 >
                   {standing.goal_difference > 0 ? '+' : ''}
@@ -137,8 +137,8 @@ export default function StandingsTableWithZones({
 
       {/* Legend */}
       {zones.length > 0 && (
-        <div className="border-t border-gray-700 bg-gray-900 px-6 py-4">
-          <div className="flex flex-wrap items-center gap-6 text-xs text-gray-400">
+        <div className="border-t border-slate-700 bg-slate-900 px-6 py-4">
+          <div className="flex flex-wrap items-center gap-6 text-xs text-slate-400">
             {zones.map((zone) => (
               <div key={zone.id} className="flex items-center gap-2">
                 <div

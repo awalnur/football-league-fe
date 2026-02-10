@@ -5,6 +5,7 @@ import Image from 'next/image';
 import { useState, useEffect } from 'react';
 import Link from "next/link";
 import { getLeagues, getMatchesByLeague, supabase } from '@/lib/supabase';
+import WelcomeSection from '@/components/WelcomeSection';
 
 // SVG Icon Components
 const Icons = {
@@ -267,6 +268,9 @@ export default function Home() {
             </Link>
           </div>
         </div>
+
+        {/* Welcome Section */}
+        <WelcomeSection />
 
         {/* Quick Stats */}
         <div className="grid grid-cols-4 gap-3 mb-8">

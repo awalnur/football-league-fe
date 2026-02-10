@@ -22,7 +22,7 @@ export default function PositionBadge({ position, size = 'md' }: PositionBadgePr
   // Silver medal for 2nd place
   if (position === 2) {
     return (
-      <div className={`flex ${sizeClasses[size]} items-center justify-center rounded-full bg-gradient-to-br from-gray-300 to-gray-500 font-bold text-white shadow-lg shadow-gray-400/30`}>
+      <div className={`flex ${sizeClasses[size]} items-center justify-center rounded-full bg-gradient-to-br from-slate-300 to-slate-500 font-bold text-white shadow-lg shadow-gray-400/30`}>
         {position}
       </div>
     );
