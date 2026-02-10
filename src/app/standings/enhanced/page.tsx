@@ -116,15 +116,15 @@ function EnhancedStandingsContent() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-900 text-white">
-        <LoadingState message="Loading standings..." className="bg-gray-900" />
+      <div className="min-h-screen bg-slate-900 text-white">
+        <LoadingState message="Loading standings..." className="bg-slate-900" />
       </div>
     );
   }
 
   if (error) {
     return (
-      <div className="min-h-screen bg-gray-900 text-white">
+      <div className="min-h-screen bg-slate-900 text-white">
         <div className="max-w-7xl mx-auto px-4 py-8">
           <EmptyState
             title="Error Loading Standings"
@@ -138,7 +138,7 @@ function EnhancedStandingsContent() {
               label: 'Back to Standings',
               onClick: () => window.location.href = '/standings'
             }}
-            className="bg-gray-800"
+            className="bg-slate-800"
           />
         </div>
       </div>
@@ -147,7 +147,7 @@ function EnhancedStandingsContent() {
 
   if (!league) {
     return (
-      <div className="min-h-screen bg-gray-900 text-white">
+      <div className="min-h-screen bg-slate-900 text-white">
         <div className="max-w-7xl mx-auto px-4 py-8">
           <EmptyState
             title="League Not Found"
@@ -156,7 +156,7 @@ function EnhancedStandingsContent() {
               label: 'Back to Standings',
               onClick: () => window.location.href = '/standings'
             }}
-            className="bg-gray-800"
+            className="bg-slate-800"
           />
         </div>
       </div>
@@ -164,14 +164,14 @@ function EnhancedStandingsContent() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-900 text-white">
+    <div className="min-h-screen bg-slate-900 text-white">
       {/* Header */}
-      <div className="bg-gray-800 border-b border-gray-700">
+      <div className="bg-slate-800 border-b border-slate-700">
         <div className="max-w-7xl mx-auto px-4 py-6">
           <div className="flex items-center gap-4 mb-4">
             <Link
               href="/standings"
-              className="p-2 hover:bg-gray-700 rounded-lg transition-colors"
+              className="p-2 hover:bg-slate-700 rounded-lg transition-colors"
             >
               <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
@@ -182,7 +182,7 @@ function EnhancedStandingsContent() {
             )}
             <div className="flex-1">
               <h1 className="text-3xl font-bold">{league.name}</h1>
-              <p className="text-gray-400">{league.season}</p>
+              <p className="text-slate-400">{league.season}</p>
             </div>
             <div className="flex gap-2">
               {getTypeBadge()}
@@ -191,7 +191,7 @@ function EnhancedStandingsContent() {
           </div>
 
           {league.description && (
-            <p className="text-gray-400 text-sm">{league.description}</p>
+            <p className="text-slate-400 text-sm">{league.description}</p>
           )}
         </div>
       </div>
@@ -203,7 +203,7 @@ function EnhancedStandingsContent() {
           <div className="space-y-6">
             {/* Relegation Info */}
             {(league.promotion_slots > 0 || league.relegation_slots > 0 || league.playoff_slots > 0) && (
-              <div className="bg-gray-800 border border-gray-700 rounded-lg p-4">
+              <div className="bg-slate-800 border border-slate-700 rounded-lg p-4">
                 <h3 className="text-lg font-semibold mb-3 flex items-center gap-2">
                   <span>⬆️⬇️</span>
                   <span>Sistem Promosi & Degradasi</span>
@@ -212,7 +212,7 @@ function EnhancedStandingsContent() {
                   {league.promotion_slots > 0 && (
                     <div className="flex items-center gap-2">
                       <div className="h-3 w-3 rounded-full bg-green-500"></div>
-                      <span className="text-gray-300">
+                      <span className="text-slate-300">
                         <strong className="text-white">{league.promotion_slots}</strong> tim promosi
                       </span>
                     </div>
@@ -220,7 +220,7 @@ function EnhancedStandingsContent() {
                   {league.playoff_slots > 0 && (
                     <div className="flex items-center gap-2">
                       <div className="h-3 w-3 rounded-full bg-blue-500"></div>
-                      <span className="text-gray-300">
+                      <span className="text-slate-300">
                         <strong className="text-white">{league.playoff_slots}</strong> tim playoff
                       </span>
                     </div>
@@ -228,7 +228,7 @@ function EnhancedStandingsContent() {
                   {league.relegation_slots > 0 && (
                     <div className="flex items-center gap-2">
                       <div className="h-3 w-3 rounded-full bg-red-500"></div>
-                      <span className="text-gray-300">
+                      <span className="text-slate-300">
                         <strong className="text-white">{league.relegation_slots}</strong> tim degradasi
                       </span>
                     </div>
@@ -250,16 +250,16 @@ function EnhancedStandingsContent() {
         {(league.tournament_format === 'cup' || league.tournament_format === 'league_cup') && league.has_group_stage && (
           <div className="space-y-6">
             {/* Group Stage Info */}
-            <div className="bg-gray-800 border border-gray-700 rounded-lg p-4">
+            <div className="bg-slate-800 border border-slate-700 rounded-lg p-4">
               <h3 className="text-lg font-semibold mb-3 flex items-center gap-2">
                 <span>🎯</span>
                 <span>Group Stage</span>
               </h3>
               <div className="grid grid-cols-2 gap-4 text-sm">
-                <div className="text-gray-300">
+                <div className="text-slate-300">
                   <strong className="text-white">{league.teams_per_group}</strong> tim per group
                 </div>
-                <div className="text-gray-300">
+                <div className="text-slate-300">
                   <strong className="text-white">{league.qualifiers_per_group}</strong> tim lolos per group
                 </div>
               </div>
@@ -272,8 +272,8 @@ function EnhancedStandingsContent() {
                 leagueType={league.type}
               />
             ) : (
-              <div className="bg-gray-800 border border-gray-700 rounded-lg p-8 text-center">
-                <p className="text-gray-400">No groups created yet</p>
+              <div className="bg-slate-800 border border-slate-700 rounded-lg p-8 text-center">
+                <p className="text-slate-400">No groups created yet</p>
               </div>
             )}
           </div>
@@ -281,11 +281,11 @@ function EnhancedStandingsContent() {
 
         {/* Cup Format without Group Stage */}
         {(league.tournament_format === 'cup' || league.tournament_format === 'league_cup') && !league.has_group_stage && (
-          <div className="bg-gray-800 border border-gray-700 rounded-lg p-8 text-center">
+          <div className="bg-slate-800 border border-slate-700 rounded-lg p-8 text-center">
             <div className="text-6xl mb-4">🏆</div>
             <h3 className="text-xl font-semibold mb-2">Knockout Tournament</h3>
-            <p className="text-gray-400 mb-4">Direct elimination format</p>
-            <p className="text-sm text-gray-500">Bracket view coming soon...</p>
+            <p className="text-slate-400 mb-4">Direct elimination format</p>
+            <p className="text-sm text-slate-500">Bracket view coming soon...</p>
           </div>
         )}
       </div>
