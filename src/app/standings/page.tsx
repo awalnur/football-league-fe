@@ -423,7 +423,7 @@ export default function StandingsPage() {
                 {/* Show Cup Tournament Button if it's a cup format */}
                 {(currentLeague.tournament_format === 'cup' || currentLeague.tournament_format === 'league_cup') && (
                   <Link
-                    href={`/cup?league=${currentLeague.id}`}
+                    href={`/cup/${currentLeague.id}`}
                     className="flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors font-medium text-sm shadow-lg shadow-blue-500/25"
                   >
                     <span>🎯</span>
@@ -459,7 +459,7 @@ export default function StandingsPage() {
             {/* Group Stage Card */}
             {currentLeague.has_group_stage && (
               <Link
-                href={`/cup?league=${currentLeague.id}`}
+                href={`/cup/${currentLeague.id}`}
                 className="group relative overflow-hidden rounded-lg bg-gradient-to-br from-blue-600/20 to-blue-800/10 border border-blue-500/30 hover:border-blue-400/50 p-6 transition-all hover:shadow-lg hover:shadow-blue-500/20"
               >
                 <div className="flex items-start justify-between mb-4">
@@ -484,7 +484,7 @@ export default function StandingsPage() {
 
             {/* Knockout Bracket Card */}
             <Link
-              href={`/cup?league=${currentLeague.id}`}
+              href={`/cup/${currentLeague.id}`}
               className="group relative overflow-hidden rounded-lg bg-gradient-to-br from-purple-600/20 to-purple-800/10 border border-purple-500/30 hover:border-purple-400/50 p-6 transition-all hover:shadow-lg hover:shadow-purple-500/20"
             >
               <div className="flex items-start justify-between mb-4">
