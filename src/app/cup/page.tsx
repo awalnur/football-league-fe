@@ -12,6 +12,8 @@ import {
 } from '@/lib/supabase';
 import CupGroupStandings from '@/components/CupGroupStandings';
 import KnockoutBracket from '@/components/KnockoutBracket';
+import Navigation from '@/components/Navigation';
+import Footer from '@/components/Footer';
 import { League, CupGroupWithStandings, MatchWithTeams } from '@/types/supabase';
 
 type TabType = 'groups' | 'r16' | 'quarters' | 'semis' | 'final';
@@ -128,7 +130,8 @@ export default function CupTournamentPage() {
   }
 
   return (
-    <div className="min-h-screen bg-slate-900 text-white">
+    <div className="min-h-screen flex flex-col bg-slate-900 text-white">
+      <Navigation />
       {/* Header */}
       <div className="bg-slate-800 border-b border-slate-700">
         <div className="max-w-7xl mx-auto px-4 py-6">
@@ -280,6 +283,7 @@ export default function CupTournamentPage() {
           </div>
         )}
       </div>
+      <Footer />
     </div>
   );
 }
