@@ -412,7 +412,7 @@ export default function LeagueDetailPage() {
           {activeTab === 'standings' && (
             <div>
               {isCupFormat && hasGroupStage ? (
-                <EnhancedCupGroupStandings groups={cupGroups} leagueType={league.type} />
+                <EnhancedCupGroupStandings groups={cupGroups} />
               ) : (
                 <StandingsTableWithZones standings={standings} zones={zones} leagueType={league.type} />
               )}

@@ -6,7 +6,6 @@ import PositionBadge from './PositionBadge';
 
 interface EnhancedCupGroupStandingsProps {
   groups: CupGroupWithStandings[];
-  leagueType: 'football' | 'efootball';
 }
 
 export default function EnhancedCupGroupStandings({ groups }: EnhancedCupGroupStandingsProps) {

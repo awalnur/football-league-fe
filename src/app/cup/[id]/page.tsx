@@ -1,7 +1,7 @@
 'use client';
 
 import Image from 'next/image';
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import {
@@ -9,7 +9,6 @@ import {
   getCupGroupsWithStandings,
   getMatchesByLeague
 } from '@/lib/supabase';
-import CupGroupStandings from '@/components/CupGroupStandings';
 import EnhancedCupGroupStandings from '@/components/EnhancedCupGroupStandings';
 import TournamentBracket from '@/components/TournamentBracket';
 import Navigation from '@/components/Navigation';
@@ -77,12 +76,12 @@ export default function CupTournamentPage() {
     loadData();
   }, [loadData]);
 
-  // Filter matches by stage
-  const r16Matches = matches.filter(m => m.cup_stage === 'round_of_16');
-  const quarterMatches = matches.filter(m => m.cup_stage === 'quarter_final');
-  const semiMatches = matches.filter(m => m.cup_stage === 'semi_final');
-  const finalMatches = matches.filter(m => m.cup_stage === 'final');
-  const thirdPlaceMatch = matches.filter(m => m.cup_stage === 'third_place');
+  // Filter matches by stage (memoized to prevent recreating arrays on each render)
+  const r16Matches = useMemo(() => matches.filter(m => m.cup_stage === 'round_of_16'), [matches]);
+  const quarterMatches = useMemo(() => matches.filter(m => m.cup_stage === 'quarter_final'), [matches]);
+  const semiMatches = useMemo(() => matches.filter(m => m.cup_stage === 'semi_final'), [matches]);
+  const finalMatches = useMemo(() => matches.filter(m => m.cup_stage === 'final'), [matches]);
+  const thirdPlaceMatch = useMemo(() => matches.filter(m => m.cup_stage === 'third_place'), [matches]);
 
   // Auto-select first available tab
   useEffect(() => {
@@ -99,7 +98,7 @@ export default function CupTournamentPage() {
         setActiveTab('final');
       }
     }
-  }, [league, groups, r16Matches, quarterMatches, semiMatches, finalMatches, activeTab]);
+  }, [league, groups, r16Matches.length, quarterMatches.length, semiMatches.length, finalMatches.length, activeTab]);
 
   // Calculate statistics
   const totalMatches = matches.length;
@@ -118,21 +117,21 @@ export default function CupTournamentPage() {
       id: 'r16' as TabType, 
       label: 'Round of 16', 
       icon: '🔥', 
-      count: r16Matches.length / (r16Matches.some(m => m.leg_number === 2) ? 2 : 1), 
+      count: Math.floor(r16Matches.length / (r16Matches.some(m => m.leg_number === 2) ? 2 : 1)), 
       show: r16Matches.length > 0 
     },
     { 
       id: 'quarters' as TabType, 
       label: 'Quarter Finals', 
       icon: '⚡', 
-      count: quarterMatches.length / (quarterMatches.some(m => m.leg_number === 2) ? 2 : 1), 
+      count: Math.floor(quarterMatches.length / (quarterMatches.some(m => m.leg_number === 2) ? 2 : 1)), 
       show: quarterMatches.length > 0 
     },
     { 
       id: 'semis' as TabType, 
       label: 'Semi Finals', 
       icon: '🏆', 
-      count: semiMatches.length / (semiMatches.some(m => m.leg_number === 2) ? 2 : 1), 
+      count: Math.floor(semiMatches.length / (semiMatches.some(m => m.leg_number === 2) ? 2 : 1)), 
       show: semiMatches.length > 0 
     },
     { 
@@ -343,7 +342,7 @@ export default function CupTournamentPage() {
                     </div>
                   </div>
                 </div>
-                <EnhancedCupGroupStandings groups={groups} leagueType={league.type} />
+                <EnhancedCupGroupStandings groups={groups} />
               </>
             ) : (
               <div className="bg-slate-800/50 border border-slate-700/50 rounded-2xl p-16 text-center backdrop-blur-sm">
