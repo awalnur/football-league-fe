@@ -5,7 +5,7 @@ import { MatchWithTeams } from '@/types/supabase';
 
 interface TournamentBracketProps {
   matches: MatchWithTeams[];
-  stage: 'round_of_16' | 'quarter_final' | 'semi_final' | 'final';
+  stage: 'round_of_16' | 'quarter_final' | 'semi_final' | 'final' | 'third_place';
 }
 
 export default function TournamentBracket({ matches, stage }: TournamentBracketProps) {

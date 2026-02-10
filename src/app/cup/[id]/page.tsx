@@ -10,6 +10,7 @@ import {
   getMatchesByLeague
 } from '@/lib/supabase';
 import CupGroupStandings from '@/components/CupGroupStandings';
+import EnhancedCupGroupStandings from '@/components/EnhancedCupGroupStandings';
 import TournamentBracket from '@/components/TournamentBracket';
 import Navigation from '@/components/Navigation';
 import Footer from '@/components/Footer';
@@ -342,7 +343,7 @@ export default function CupTournamentPage() {
                     </div>
                   </div>
                 </div>
-                <CupGroupStandings groups={groups} leagueType={league.type} />
+                <EnhancedCupGroupStandings groups={groups} leagueType={league.type} />
               </>
             ) : (
               <div className="bg-slate-800/50 border border-slate-700/50 rounded-2xl p-16 text-center backdrop-blur-sm">
