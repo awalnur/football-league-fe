@@ -1,5 +1,7 @@
 'use client';
 
+import Image from 'next/image';
+
 import { CupGroupWithStandings } from '@/types/supabase';
 
 interface CupGroupStandingsProps {
@@ -7,7 +9,7 @@ interface CupGroupStandingsProps {
   leagueType: 'football' | 'efootball';
 }
 
-export default function CupGroupStandings({ groups, leagueType }: CupGroupStandingsProps) {
+export default function CupGroupStandings({ groups }: CupGroupStandingsProps) {
 
   const getPositionBadge = (position: number, isQualified: boolean) => {
     if (position === 1) {
@@ -88,11 +90,11 @@ export default function CupGroupStandings({ groups, leagueType }: CupGroupStandi
                     {/* Team */}
                     <div className="col-span-3 flex items-center gap-2 min-w-0">
                       {standing.team?.logo_url ? (
-                        <img
+                        <Image
                           src={standing.team.logo_url}
                           alt=""
                           className="h-6 w-6 flex-shrink-0 rounded object-contain"
-                        />
+                         width={24} height={24} />
                       ) : (
                         <div className="h-6 w-6 flex-shrink-0 rounded bg-gray-700 flex items-center justify-center">
                           <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">

@@ -1,5 +1,7 @@
 'use client';
 
+import Image from 'next/image';
+
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { getLeagues, getMatchesByLeague, supabase } from '@/lib/supabase';
@@ -180,7 +182,7 @@ export default function MatchesPage() {
       setExpandedMatch(null);
       setMatchDetails({});
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+     
   }, [selectedLeague]);
 
   const handleTabChange = (tab: 'football' | 'efootball') => {
@@ -382,7 +384,7 @@ export default function MatchesPage() {
                                       {homeWin && <span className="ml-1">🏆</span>}
                                     </span>
                                     <div className={`w-8 h-8 rounded flex items-center justify-center flex-shrink-0 ${homeWin ? 'bg-green-500/20' : awayWin ? 'bg-red-500/20' : 'bg-slate-700'}`}>
-                                      {match.home_team?.logo_url ? <img src={match.home_team.logo_url} alt="" className="w-6 h-6 object-contain" /> : <span className="text-slate-400">{Icons.home}</span>}
+                                      {match.home_team?.logo_url ? <Image src={match.home_team.logo_url} alt="" className="w-6 h-6 object-contain"  width={24} height={24} /> : <span className="text-slate-400">{Icons.home}</span>}
                                     </div>
                                   </div>
 
@@ -407,7 +409,7 @@ export default function MatchesPage() {
                                   {/* Away Team */}
                                   <div className="flex items-center gap-2 flex-1">
                                     <div className={`w-8 h-8 rounded flex items-center justify-center flex-shrink-0 ${awayWin ? 'bg-green-500/20' : homeWin ? 'bg-red-500/20' : 'bg-slate-700'}`}>
-                                      {match.away_team?.logo_url ? <img src={match.away_team.logo_url} alt="" className="w-6 h-6 object-contain" /> : <span className="text-slate-400">{Icons.plane}</span>}
+                                      {match.away_team?.logo_url ? <Image src={match.away_team.logo_url} alt="" className="w-6 h-6 object-contain"  width={24} height={24} /> : <span className="text-slate-400">{Icons.plane}</span>}
                                     </div>
                                     <span className={`text-sm font-medium truncate max-w-[100px] sm:max-w-[150px] ${awayWin ? 'text-green-400' : homeWin ? 'text-red-400' : 'text-white'}`}>
                                       {awayWin && <span className="mr-1">🏆</span>}
@@ -449,7 +451,7 @@ export default function MatchesPage() {
                                     <div className="flex flex-col items-center gap-2">
                                       <div className="w-14 h-14 rounded-lg bg-slate-700 flex items-center justify-center">
                                         {match.home_team?.logo_url ? (
-                                          <img src={match.home_team.logo_url} alt="" className="w-10 h-10 object-contain" />
+                                          <Image src={match.home_team.logo_url} alt="" className="w-10 h-10 object-contain"  width={40} height={40} />
                                         ) : (
                                           <span className="text-slate-400">{Icons.shield}</span>
                                         )}
@@ -491,7 +493,7 @@ export default function MatchesPage() {
                                     <div className="flex flex-col items-center gap-2">
                                       <div className="w-14 h-14 rounded-lg bg-slate-700 flex items-center justify-center">
                                         {match.away_team?.logo_url ? (
-                                          <img src={match.away_team.logo_url} alt="" className="w-10 h-10 object-contain" />
+                                          <Image src={match.away_team.logo_url} alt="" className="w-10 h-10 object-contain"  width={40} height={40} />
                                         ) : (
                                           <span className="text-slate-400">{Icons.shield}</span>
                                         )}
@@ -522,7 +524,7 @@ export default function MatchesPage() {
                                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                                         {detail.screenshots.map(screenshot => (
                                           <div key={screenshot.id} className="bg-slate-800 rounded-lg overflow-hidden border border-slate-700">
-                                            <img src={screenshot.image_url} alt={screenshot.caption || 'Match Screenshot'} className="w-full h-auto object-cover" />
+                                            <Image src={screenshot.image_url} alt={screenshot.caption || 'Match Screenshot'} className="w-full h-auto object-cover"  width={32} height={32} />
                                             {screenshot.caption && (
                                               <div className="p-2 border-t border-slate-700">
                                                 <p className="text-xs text-slate-400">{screenshot.caption}</p>

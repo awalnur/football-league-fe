@@ -1,6 +1,8 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import Image from 'next/image';
+
+import { useState, useEffect, useCallback } from 'react';
 import { useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import {
@@ -25,7 +27,7 @@ export default function CupTournamentPage() {
   const [error, setError] = useState('');
   const [activeTab, setActiveTab] = useState<TabType>('groups');
 
-  const loadData = async () => {
+  const loadData = useCallback(async () => {
     setLoading(true);
     setError('');
 
@@ -64,14 +66,13 @@ export default function CupTournamentPage() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [leagueId]);
 
   useEffect(() => {
     if (leagueId) {
       loadData();
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [leagueId]);
+  }, [leagueId, loadData]);
 
   // Filter matches by stage
   const r16Matches = matches.filter(m => m.cup_stage === 'round_of_16');
@@ -141,7 +142,7 @@ export default function CupTournamentPage() {
               </svg>
             </Link>
             {league.logo_url && (
-              <img src={league.logo_url} alt={league.name} className="w-16 h-16 object-contain" />
+              <Image src={league.logo_url} alt={league.name} className="w-16 h-16 object-contain"  width={64} height={64} />
             )}
             <div className="flex-1">
               <div className="flex items-center gap-2 mb-1">

@@ -1,5 +1,7 @@
 'use client';
 
+import Image from 'next/image';
+
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
@@ -55,7 +57,7 @@ export default function NewLeaguePage() {
 
       // Upload logo if provided
       if (logoFile && league) {
-        const { url, error: uploadError } = await uploadLeagueLogo(logoFile, league.id);
+        const { url } = await uploadLeagueLogo(logoFile, league.id);
         if (url) {
           // Update league with logo URL
           // This would need an update function, but for now we'll skip
@@ -102,7 +104,7 @@ export default function NewLeaguePage() {
           <div className="flex items-center gap-4">
             <div className="w-24 h-24 rounded-xl bg-gray-700 flex items-center justify-center overflow-hidden">
               {logoPreview ? (
-                <img src={logoPreview} alt="Preview" className="w-full h-full object-cover" />
+                <Image src={logoPreview} alt="Preview" className="w-full h-full object-cover"  width={96} height={96} />
               ) : (
                 <span className="text-4xl">🏆</span>
               )}

@@ -1,5 +1,7 @@
 'use client';
 
+import Image from 'next/image';
+
 import { StandingWithTeam, LeagueZone } from '@/types/supabase';
 
 interface FormBadgeProps {
@@ -30,8 +32,7 @@ interface StandingsTableWithZonesProps {
 
 export default function StandingsTableWithZones({
   standings,
-  zones = [],
-  leagueType
+  zones = []
 }: StandingsTableWithZonesProps) {
 
   const getPositionStyle = (position: number, zone?: LeagueZone) => {
@@ -112,11 +113,11 @@ export default function StandingsTableWithZones({
               </div>
               <div className="col-span-3 flex items-center gap-3">
                 {standing.team.logo_url ? (
-                  <img
-                    src={standing.team.logo_url}
+                  <Image
+                          src={standing.team.logo_url}
                     alt={standing.team.name}
                     className="w-8 h-8 object-contain"
-                  />
+                   width={32} height={32} />
                 ) : (
                   <span className="text-2xl">⚽</span>
                 )}

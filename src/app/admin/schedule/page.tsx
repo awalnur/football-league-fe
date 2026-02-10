@@ -1,6 +1,8 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import Image from 'next/image';
+
+import { useState, useEffect, useCallback } from 'react';
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
 import { getLeagues, getMatchesByLeague, getTeamsByLeague } from '@/lib/supabase';
@@ -34,21 +36,7 @@ export default function SchedulePage() {
   const [loading, setLoading] = useState(true);
   const [teamsCount, setTeamsCount] = useState(0);
 
-  useEffect(() => {
-    loadLeagues();
-  }, []);
-
-  useEffect(() => {
-    if (selectedLeague) {
-      loadSchedule(selectedLeague);
-      loadTeamsCount(selectedLeague);
-    } else {
-      setMatches([]);
-      setLoading(false);
-    }
-  }, [selectedLeague]);
-
-  async function loadLeagues() {
+  const loadLeagues = useCallback(async () => {
     const { data } = await getLeagues();
     if (data) {
       setLeagues(data as League[]);
@@ -59,23 +47,39 @@ export default function SchedulePage() {
       }
     }
     if (!leagueParam) setLoading(false);
-  }
+  }, [leagueParam, selectedLeague]);
 
-  async function loadSchedule(leagueId: string) {
+  const loadSchedule = useCallback(async (leagueId: string) => {
     setLoading(true);
     const { data } = await getMatchesByLeague(leagueId);
     if (data) {
       setMatches(data as unknown as Match[]);
     }
     setLoading(false);
-  }
+  }, []);
 
-  async function loadTeamsCount(leagueId: string) {
+  const loadTeamsCount = useCallback(async (leagueId: string) => {
     const { data } = await getTeamsByLeague(leagueId);
     if (data) {
       setTeamsCount(data.length);
     }
-  }
+  }, []);
+
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    loadLeagues();
+  }, [loadLeagues]);
+
+  useEffect(() => {
+    if (selectedLeague) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
+      loadSchedule(selectedLeague);
+      loadTeamsCount(selectedLeague);
+    } else {
+      setMatches([]);
+      setLoading(false);
+    }
+  }, [selectedLeague, loadSchedule, loadTeamsCount]);
 
   const currentLeague = leagues.find(l => l.id === selectedLeague);
 
@@ -257,7 +261,7 @@ export default function SchedulePage() {
                           <span className="text-white font-medium text-right">{match.home_team?.name}</span>
                           <div className="w-8 h-8 rounded-full bg-gray-600 flex items-center justify-center text-sm">
                             {match.home_team?.logo_url ? (
-                              <img src={match.home_team.logo_url} alt="" className="w-6 h-6 object-contain" />
+                              <Image src={match.home_team.logo_url} alt="" className="w-6 h-6 object-contain"  width={24} height={24} />
                             ) : '🏠'}
                           </div>
                         </div>
@@ -281,7 +285,7 @@ export default function SchedulePage() {
                         <div className="flex items-center gap-2 flex-1">
                           <div className="w-8 h-8 rounded-full bg-gray-600 flex items-center justify-center text-sm">
                             {match.away_team?.logo_url ? (
-                              <img src={match.away_team.logo_url} alt="" className="w-6 h-6 object-contain" />
+                              <Image src={match.away_team.logo_url} alt="" className="w-6 h-6 object-contain"  width={24} height={24} />
                             ) : '✈️'}
                           </div>
                           <span className="text-white font-medium">{match.away_team?.name}</span>

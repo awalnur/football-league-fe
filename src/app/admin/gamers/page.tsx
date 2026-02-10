@@ -1,6 +1,9 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+/* eslint-disable react-hooks/set-state-in-effect */
+import Image from 'next/image';
+
+import { useState, useEffect, useCallback } from 'react';
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
 import { getLeagues, getTeamsByLeague, getGamePlayersByTeam, supabase } from '@/lib/supabase';
@@ -41,28 +44,7 @@ export default function GamersPage() {
   const [loading, setLoading] = useState(true);
   const [deleting, setDeleting] = useState<string | null>(null);
 
-  useEffect(() => {
-    loadLeagues();
-  }, []);
-
-  useEffect(() => {
-    if (selectedLeague) {
-      loadTeams(selectedLeague);
-    } else {
-      setTeams([]);
-      setSelectedTeam('');
-    }
-  }, [selectedLeague]);
-
-  useEffect(() => {
-    if (selectedTeam) {
-      loadGamers(selectedTeam);
-    } else {
-      setGamers([]);
-    }
-  }, [selectedTeam]);
-
-  async function loadLeagues() {
+  const loadLeagues = useCallback(async () => {
     const { data } = await getLeagues();
     if (data) {
       // Only eFootball leagues
@@ -74,9 +56,9 @@ export default function GamersPage() {
       }
     }
     setLoading(false);
-  }
+  }, []);
 
-  async function loadTeams(leagueId: string) {
+  const loadTeams = useCallback(async (leagueId: string) => {
     const { data } = await getTeamsByLeague(leagueId);
     if (data) {
       setTeams(data as Team[]);
@@ -84,16 +66,37 @@ export default function GamersPage() {
         setSelectedTeam(teamParam);
       }
     }
-  }
+  }, [teamParam]);
 
-  async function loadGamers(teamId: string) {
+  const loadGamers = useCallback(async (teamId: string) => {
     setLoading(true);
     const { data } = await getGamePlayersByTeam(teamId);
     if (data) {
       setGamers(data as GamePlayer[]);
     }
     setLoading(false);
-  }
+  }, []);
+
+  useEffect(() => {
+    loadLeagues();
+  }, [loadLeagues]);
+
+  useEffect(() => {
+    if (selectedLeague) {
+      loadTeams(selectedLeague);
+    } else {
+      setTeams([]);
+      setSelectedTeam('');
+    }
+  }, [selectedLeague, loadTeams]);
+
+  useEffect(() => {
+    if (selectedTeam) {
+      loadGamers(selectedTeam);
+    } else {
+      setGamers([]);
+    }
+  }, [selectedTeam, loadGamers]);
 
   async function handleDelete(id: string, name: string) {
     if (!confirm(`Yakin ingin menghapus gamer "${name}"?`)) return;
@@ -229,7 +232,7 @@ export default function GamersPage() {
           <div className="bg-gray-800 rounded-xl p-4 border border-gray-700 flex items-center gap-4">
             <div className="w-12 h-12 rounded-lg bg-gray-700 flex items-center justify-center">
               {currentTeam?.logo_url ? (
-                <img src={currentTeam.logo_url} alt="" className="w-8 h-8 object-contain" />
+                <Image src={currentTeam.logo_url} alt="" className="w-8 h-8 object-contain"  width={32} height={32} />
               ) : (
                 '🛡️'
               )}
@@ -253,7 +256,7 @@ export default function GamersPage() {
                   {/* Avatar */}
                   <div className="w-16 h-16 rounded-full bg-gray-700 flex items-center justify-center text-2xl overflow-hidden">
                     {gamer.avatar_url ? (
-                      <img src={gamer.avatar_url} alt={gamer.real_name} className="w-full h-full object-cover" />
+                      <Image src={gamer.avatar_url} alt={gamer.real_name} className="w-full h-full object-cover"  width={64} height={64} />
                     ) : (
                       '👤'
                     )}

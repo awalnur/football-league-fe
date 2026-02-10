@@ -1,6 +1,8 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import Image from 'next/image';
+
+import { useState, useEffect, useCallback } from 'react';
 import { useParams } from 'next/navigation';
 import Link from 'next/link';
 import { getLeagueById, getStandingsWithZones, getMatchesByLeague, getCupGroupsWithStandings, supabase } from '@/lib/supabase';
@@ -49,14 +51,7 @@ export default function LeagueDetailPage() {
   const [matchDetails, setMatchDetails] = useState<Record<string, { screenshots: Screenshot[] }>>({});
   const [loadingDetail, setLoadingDetail] = useState(false);
 
-  useEffect(() => {
-    if (leagueId) {
-      loadLeagueData();
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [leagueId]);
-
-  const loadLeagueData = async () => {
+  const loadLeagueData = useCallback(async () => {
     setLoading(true);
     try {
       // Load league info
@@ -99,9 +94,9 @@ export default function LeagueDetailPage() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [leagueId]);
 
-  const loadMatchDetail = async (matchId: string) => {
+  const loadMatchDetail = useCallback(async (matchId: string) => {
     if (matchDetails[matchId]) return; // Already loaded
 
     setLoadingDetail(true);
@@ -121,16 +116,22 @@ export default function LeagueDetailPage() {
     }));
 
     setLoadingDetail(false);
-  };
+  }, [matchDetails]);
 
-  const toggleMatchDetail = async (matchId: string) => {
+  const toggleMatchDetail = useCallback(async (matchId: string) => {
     if (expandedMatch === matchId) {
       setExpandedMatch(null);
     } else {
       setExpandedMatch(matchId);
       await loadMatchDetail(matchId);
     }
-  };
+  }, [expandedMatch, loadMatchDetail]);
+
+  useEffect(() => {
+    if (leagueId) {
+      loadLeagueData();
+    }
+  }, [leagueId, loadLeagueData]);
 
   if (loading) {
     return (
@@ -334,7 +335,7 @@ export default function LeagueDetailPage() {
                             <div className="flex items-center justify-between text-sm">
                               <div className="flex items-center gap-2 flex-1 min-w-0">
                                 {match.home_team.logo_url && (
-                                  <img src={match.home_team.logo_url} className="w-5 h-5 object-contain flex-shrink-0" alt="" />
+                                  <Image src={match.home_team.logo_url} className="w-5 h-5 object-contain flex-shrink-0" alt=""  width={20} height={20} />
                                 )}
                                 <span className="text-white truncate">{match.home_team.name}</span>
                               </div>
@@ -344,7 +345,7 @@ export default function LeagueDetailPage() {
                               <div className="flex items-center gap-2 flex-1 min-w-0 justify-end">
                                 <span className="text-white truncate text-right">{match.away_team.name}</span>
                                 {match.away_team.logo_url && (
-                                  <img src={match.away_team.logo_url} className="w-5 h-5 object-contain flex-shrink-0" alt="" />
+                                  <Image src={match.away_team.logo_url} className="w-5 h-5 object-contain flex-shrink-0" alt=""  width={20} height={20} />
                                 )}
                               </div>
                             </div>
@@ -383,7 +384,7 @@ export default function LeagueDetailPage() {
                             <div className="flex items-center justify-between text-sm">
                               <div className="flex items-center gap-2 flex-1 min-w-0">
                                 {match.home_team.logo_url && (
-                                  <img src={match.home_team.logo_url} className="w-5 h-5 object-contain flex-shrink-0" alt="" />
+                                  <Image src={match.home_team.logo_url} className="w-5 h-5 object-contain flex-shrink-0" alt=""  width={20} height={20} />
                                 )}
                                 <span className="text-white truncate">{match.home_team.name}</span>
                               </div>
@@ -393,7 +394,7 @@ export default function LeagueDetailPage() {
                               <div className="flex items-center gap-2 flex-1 min-w-0 justify-end">
                                 <span className="text-white truncate text-right">{match.away_team.name}</span>
                                 {match.away_team.logo_url && (
-                                  <img src={match.away_team.logo_url} className="w-5 h-5 object-contain flex-shrink-0" alt="" />
+                                  <Image src={match.away_team.logo_url} className="w-5 h-5 object-contain flex-shrink-0" alt=""  width={20} height={20} />
                                 )}
                               </div>
                             </div>
@@ -523,7 +524,7 @@ export default function LeagueDetailPage() {
                                               </span>
                                               <div className={`w-8 h-8 rounded flex items-center justify-center flex-shrink-0 ${homeWin ? 'bg-green-500/20' : awayWin ? 'bg-red-500/20' : 'bg-slate-700'}`}>
                                                 {match.home_team?.logo_url ? (
-                                                  <img src={match.home_team.logo_url} alt="" className="w-6 h-6 object-contain" />
+                                                  <Image src={match.home_team.logo_url} alt="" className="w-6 h-6 object-contain"  width={24} height={24} />
                                                 ) : (
                                                   <svg className="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
                                                     <path strokeLinecap="round" strokeLinejoin="round" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
@@ -554,7 +555,7 @@ export default function LeagueDetailPage() {
                                             <div className="flex items-center gap-2 flex-1">
                                               <div className={`w-8 h-8 rounded flex items-center justify-center flex-shrink-0 ${awayWin ? 'bg-green-500/20' : homeWin ? 'bg-red-500/20' : 'bg-slate-700'}`}>
                                                 {match.away_team?.logo_url ? (
-                                                  <img src={match.away_team.logo_url} alt="" className="w-6 h-6 object-contain" />
+                                                  <Image src={match.away_team.logo_url} alt="" className="w-6 h-6 object-contain"  width={24} height={24} />
                                                 ) : (
                                                   <svg className="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
                                                     <path strokeLinecap="round" strokeLinejoin="round" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
@@ -618,7 +619,7 @@ export default function LeagueDetailPage() {
                                               <div className="flex flex-col items-center gap-2">
                                                 <div className="w-14 h-14 rounded-lg bg-slate-700 flex items-center justify-center">
                                                   {match.home_team?.logo_url ? (
-                                                    <img src={match.home_team.logo_url} alt="" className="w-10 h-10 object-contain" />
+                                                    <Image src={match.home_team.logo_url} alt="" className="w-10 h-10 object-contain"  width={40} height={40} />
                                                   ) : (
                                                     <svg className="w-8 h-8 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
                                                       <path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
@@ -662,7 +663,7 @@ export default function LeagueDetailPage() {
                                               <div className="flex flex-col items-center gap-2">
                                                 <div className="w-14 h-14 rounded-lg bg-slate-700 flex items-center justify-center">
                                                   {match.away_team?.logo_url ? (
-                                                    <img src={match.away_team.logo_url} alt="" className="w-10 h-10 object-contain" />
+                                                    <Image src={match.away_team.logo_url} alt="" className="w-10 h-10 object-contain"  width={40} height={40} />
                                                   ) : (
                                                     <svg className="w-8 h-8 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
                                                       <path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
@@ -697,7 +698,7 @@ export default function LeagueDetailPage() {
                                                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                                                   {detail.screenshots.map(screenshot => (
                                                     <div key={screenshot.id} className="bg-slate-800 rounded-lg overflow-hidden border border-slate-700">
-                                                      <img src={screenshot.image_url} alt={screenshot.caption || 'Match Screenshot'} className="w-full h-auto object-cover" />
+                                                      <Image src={screenshot.image_url} alt={screenshot.caption || 'Match Screenshot'} className="w-full h-auto object-cover"  width={32} height={32} />
                                                       {screenshot.caption && (
                                                         <div className="p-2 border-t border-slate-700">
                                                           <p className="text-xs text-slate-400">{screenshot.caption}</p>

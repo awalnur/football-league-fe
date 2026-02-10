@@ -1,6 +1,8 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import Image from 'next/image';
+
+import { useState, useEffect, useCallback } from 'react';
 import { useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import {
@@ -24,13 +26,7 @@ export default function EnhancedStandingsPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
 
-  useEffect(() => {
-    if (leagueId) {
-      loadData();
-    }
-  }, [leagueId]);
-
-  const loadData = async () => {
+  const loadData = useCallback(async () => {
     setLoading(true);
     setError('');
 
@@ -73,7 +69,13 @@ export default function EnhancedStandingsPage() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [leagueId]);
+
+  useEffect(() => {
+    if (leagueId) {
+      loadData();
+    }
+  }, [leagueId, loadData]);
 
   const getFormatBadge = () => {
     if (!league) return null;
@@ -163,7 +165,7 @@ export default function EnhancedStandingsPage() {
               </svg>
             </Link>
             {league.logo_url && (
-              <img src={league.logo_url} alt={league.name} className="w-16 h-16 object-contain" />
+              <Image src={league.logo_url} alt={league.name} className="w-16 h-16 object-contain"  width={64} height={64} />
             )}
             <div className="flex-1">
               <h1 className="text-3xl font-bold">{league.name}</h1>

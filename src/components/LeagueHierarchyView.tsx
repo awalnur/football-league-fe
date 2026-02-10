@@ -9,10 +9,6 @@ interface LeagueHierarchyViewProps {
 
 export default function LeagueHierarchyView({ leagues }: LeagueHierarchyViewProps) {
 
-  const getTypeColor = (type: string) => {
-    return type === 'football' ? 'text-emerald-400' : 'text-purple-400';
-  };
-
   const getTypeIcon = (type: string) => {
     return type === 'football' ? '⚽' : '🎮';
   };

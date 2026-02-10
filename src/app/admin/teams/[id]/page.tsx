@@ -1,6 +1,8 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import Image from 'next/image';
+
+import { useState, useEffect, useCallback } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import Link from 'next/link';
 import { getLeagues, supabase, uploadTeamLogo } from '@/lib/supabase';
@@ -9,16 +11,6 @@ interface League {
   id: string;
   name: string;
   type: string;
-}
-
-interface Team {
-  id: string;
-  name: string;
-  short_name: string | null;
-  logo_url: string | null;
-  primary_color: string | null;
-  secondary_color: string | null;
-  league_id: string;
 }
 
 export default function EditTeamPage() {
@@ -45,11 +37,7 @@ export default function EditTeamPage() {
 
   const [originalLogoUrl, setOriginalLogoUrl] = useState<string | null>(null);
 
-  useEffect(() => {
-    loadData();
-  }, [teamId]);
-
-  async function loadData() {
+  const loadData = useCallback(async () => {
     setLoading(true);
     try {
       // Load leagues
@@ -85,7 +73,11 @@ export default function EditTeamPage() {
     } finally {
       setLoading(false);
     }
-  }
+  }, [teamId]);
+
+  useEffect(() => {
+    loadData();
+  }, [loadData]);
 
   const handleLogoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -268,7 +260,7 @@ export default function EditTeamPage() {
             >
               {logoPreview ? (
                 <>
-                  <img src={logoPreview} alt="Preview" className="w-16 h-16 object-contain" />
+                  <Image src={logoPreview} alt="Preview" className="w-16 h-16 object-contain"  width={64} height={64} />
                   <button
                     type="button"
                     onClick={handleRemoveLogo}
@@ -396,7 +388,7 @@ export default function EditTeamPage() {
               style={{ backgroundColor: formData.primary_color }}
             >
               {logoPreview ? (
-                <img src={logoPreview} alt="" className="w-10 h-10 object-contain" />
+                <Image src={logoPreview} alt="" className="w-10 h-10 object-contain"  width={40} height={40} />
               ) : (
                 <svg className="w-7 h-7 text-white/50" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
                   <path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />

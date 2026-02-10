@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { getLeagues, getLeagueZones, autoCreateLeagueZones } from '@/lib/supabase';
 import { League, LeagueZone } from '@/types/supabase';
 
@@ -13,17 +13,7 @@ export default function ZonesPage() {
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
 
-  useEffect(() => {
-    loadLeagues();
-  }, []);
-
-  useEffect(() => {
-    if (selectedLeague) {
-      loadZones();
-    }
-  }, [selectedLeague]);
-
-  const loadLeagues = async () => {
+  const loadLeagues = useCallback(async () => {
     try {
       const { data } = await getLeagues();
       if (data) {
@@ -34,12 +24,13 @@ export default function ZonesPage() {
           setSelectedLeague(leagueFormat[0].id);
         }
       }
-    } catch (err) {
+    } catch (error) {
+      console.error('Failed to load leagues:', error);
       setError('Failed to load leagues');
     }
-  };
+  }, []);
 
-  const loadZones = async () => {
+  const loadZones = useCallback(async () => {
     if (!selectedLeague) return;
 
     setLoading(true);
@@ -53,7 +44,17 @@ export default function ZonesPage() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [selectedLeague]);
+
+  useEffect(() => {
+    loadLeagues();
+  }, [loadLeagues]);
+
+  useEffect(() => {
+    if (selectedLeague) {
+      loadZones();
+    }
+  }, [selectedLeague, loadZones]);
 
   const handleGenerateZones = async () => {
     if (!selectedLeague) return;
@@ -197,7 +198,7 @@ export default function ZonesPage() {
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
               </svg>
               <p className="text-slate-400 mb-4">Belum ada zones untuk liga ini</p>
-              <p className="text-sm text-slate-500 mb-4">Klik tombol "Generate Zones" untuk membuat zones otomatis</p>
+              <p className="text-sm text-slate-500 mb-4">Klik tombol &quot;Generate Zones&quot; untuk membuat zones otomatis</p>
             </div>
           ) : (
             <div className="bg-slate-900 border border-slate-800 rounded-lg overflow-hidden">

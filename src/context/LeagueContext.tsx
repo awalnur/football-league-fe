@@ -35,40 +35,45 @@ const processInitialStandings = (): Record<string, Team[]> => {
 
 export function LeagueProvider({ children }: { children: ReactNode }) {
   const [leagues] = useState<League[]>(initialLeagues);
-  const [teams, setTeams] = useState<Record<string, Team[]>>(() => processInitialStandings());
-  const [matches, setMatches] = useState<Match[]>([]);
-  const [schedules, setSchedules] = useState<Schedule[]>([]);
-
-  // Load from localStorage on mount
-  useEffect(() => {
-    const savedTeams = localStorage.getItem('football-leagues-teams');
-    const savedMatches = localStorage.getItem('football-leagues-matches');
-    const savedSchedules = localStorage.getItem('football-leagues-schedules');
-
-    if (savedTeams) {
-      try {
-        setTeams(JSON.parse(savedTeams));
-      } catch (e) {
-        console.error('Failed to parse saved teams:', e);
+  const [teams, setTeams] = useState<Record<string, Team[]>>(() => {
+    if (typeof window !== 'undefined') {
+      const savedTeams = localStorage.getItem('football-leagues-teams');
+      if (savedTeams) {
+        try {
+          return JSON.parse(savedTeams);
+        } catch (e) {
+          console.error('Failed to parse saved teams:', e);
+        }
       }
     }
-
-    if (savedMatches) {
-      try {
-        setMatches(JSON.parse(savedMatches));
-      } catch (e) {
-        console.error('Failed to parse saved matches:', e);
+    return processInitialStandings();
+  });
+  const [matches, setMatches] = useState<Match[]>(() => {
+    if (typeof window !== 'undefined') {
+      const savedMatches = localStorage.getItem('football-leagues-matches');
+      if (savedMatches) {
+        try {
+          return JSON.parse(savedMatches);
+        } catch (e) {
+          console.error('Failed to parse saved matches:', e);
+        }
       }
     }
-
-    if (savedSchedules) {
-      try {
-        setSchedules(JSON.parse(savedSchedules));
-      } catch (e) {
-        console.error('Failed to parse saved schedules:', e);
+    return [];
+  });
+  const [schedules, setSchedules] = useState<Schedule[]>(() => {
+    if (typeof window !== 'undefined') {
+      const savedSchedules = localStorage.getItem('football-leagues-schedules');
+      if (savedSchedules) {
+        try {
+          return JSON.parse(savedSchedules);
+        } catch (e) {
+          console.error('Failed to parse saved schedules:', e);
+        }
       }
     }
-  }, []);
+    return [];
+  });
 
   // Save to localStorage on change
   useEffect(() => {

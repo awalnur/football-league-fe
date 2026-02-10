@@ -1,6 +1,8 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import Image from 'next/image';
+
+import { useState, useEffect, useCallback } from 'react';
 import Link from 'next/link';
 import { getLeagues, supabase } from '@/lib/supabase';
 
@@ -19,17 +21,18 @@ export default function LeaguesPage() {
   const [loading, setLoading] = useState(true);
   const [deleting, setDeleting] = useState<string | null>(null);
 
-  async function loadLeagues() {
+  const loadLeagues = useCallback(async () => {
     const { data } = await getLeagues();
     if (data) {
       setLeagues(data as League[]);
     }
     setLoading(false);
-  }
+  }, []);
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     loadLeagues();
-  }, []);
+  }, [loadLeagues]);
 
   async function handleDelete(id: string, name: string) {
     if (!confirm(`Yakin ingin menghapus liga "${name}"? Semua data tim dan pertandingan akan ikut terhapus.`)) {
@@ -114,7 +117,7 @@ export default function LeaguesPage() {
                 <div className="flex items-center gap-4 flex-1">
                   <div className="w-16 h-16 rounded-xl bg-gray-700 flex items-center justify-center text-3xl">
                     {league.logo_url ? (
-                      <img src={league.logo_url} alt={league.name} className="w-full h-full rounded-xl object-cover" />
+                      <Image src={league.logo_url} alt={league.name} className="w-full h-full rounded-xl object-cover"  width={64} height={64} />
                     ) : (
                       league.type === 'efootball' ? '🎮' : '🏆'
                     )}
