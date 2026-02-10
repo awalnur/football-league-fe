@@ -3,26 +3,8 @@
 import Image from 'next/image';
 
 import { StandingWithTeam, LeagueZone } from '@/types/supabase';
-
-interface FormBadgeProps {
-  result: 'W' | 'D' | 'L';
-}
-
-function FormBadge({ result }: FormBadgeProps) {
-  const colors = {
-    W: 'bg-emerald-500 text-white',
-    D: 'bg-amber-500 text-white',
-    L: 'bg-red-500 text-white',
-  };
-
-  return (
-    <span
-      className={`inline-flex h-6 w-6 items-center justify-center rounded-full text-xs font-bold ${colors[result]} transition-transform hover:scale-110`}
-    >
-      {result}
-    </span>
-  );
-}
+import FormBadge from './FormBadge';
+import PositionBadge from './PositionBadge';
 
 interface StandingsTableWithZonesProps {
   standings: StandingWithTeam[];
@@ -42,34 +24,7 @@ export default function StandingsTableWithZones({
     return 'border-l-4 border-transparent';
   };
 
-  const getPositionBadge = (position: number) => {
-    if (position === 1) {
-      return (
-        <div className="flex h-8 w-8 items-center justify-center rounded-full bg-gradient-to-br from-yellow-400 to-yellow-600 text-sm font-bold text-white shadow-lg shadow-yellow-500/30">
-          {position}
-        </div>
-      );
-    }
-    if (position === 2) {
-      return (
-        <div className="flex h-8 w-8 items-center justify-center rounded-full bg-gradient-to-br from-gray-300 to-gray-500 text-sm font-bold text-white shadow-lg shadow-gray-400/30">
-          {position}
-        </div>
-      );
-    }
-    if (position === 3) {
-      return (
-        <div className="flex h-8 w-8 items-center justify-center rounded-full bg-gradient-to-br from-amber-600 to-amber-800 text-sm font-bold text-white shadow-lg shadow-amber-600/30">
-          {position}
-        </div>
-      );
-    }
-    return (
-      <div className="flex h-8 w-8 items-center justify-center rounded-full bg-gray-700 text-sm font-bold text-gray-300">
-        {position}
-      </div>
-    );
-  };
+
 
   const parseForm = (form: string | null): ('W' | 'D' | 'L')[] => {
     if (!form) return [];
@@ -109,7 +64,7 @@ export default function StandingsTableWithZones({
               } : {}}
             >
               <div className="col-span-1 flex items-center justify-center">
-                {getPositionBadge(position)}
+                <PositionBadge position={position} />
               </div>
               <div className="col-span-3 flex items-center gap-3">
                 {standing.team.logo_url ? (

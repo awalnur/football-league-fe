@@ -3,6 +3,7 @@
 import Image from 'next/image';
 
 import { CupGroupWithStandings } from '@/types/supabase';
+import PositionBadge from './PositionBadge';
 
 interface CupGroupStandingsProps {
   groups: CupGroupWithStandings[];
@@ -12,32 +13,16 @@ interface CupGroupStandingsProps {
 export default function CupGroupStandings({ groups }: CupGroupStandingsProps) {
 
   const getPositionBadge = (position: number, isQualified: boolean) => {
-    if (position === 1) {
-      return (
-        <div className="flex h-8 w-8 items-center justify-center rounded-full bg-gradient-to-br from-yellow-400 to-yellow-600 text-sm font-bold text-white shadow-lg shadow-yellow-500/30">
-          {position}
-        </div>
-      );
-    }
-    if (position === 2) {
-      return (
-        <div className="flex h-8 w-8 items-center justify-center rounded-full bg-gradient-to-br from-gray-300 to-gray-500 text-sm font-bold text-white shadow-lg shadow-gray-400/30">
-          {position}
-        </div>
-      );
-    }
-    if (isQualified) {
+    // Use custom green badge for qualified teams (not 1st or 2nd)
+    if (isQualified && position > 2) {
       return (
         <div className="flex h-8 w-8 items-center justify-center rounded-full bg-gradient-to-br from-green-500 to-green-700 text-sm font-bold text-white shadow-lg shadow-green-500/30">
           {position}
         </div>
       );
     }
-    return (
-      <div className="flex h-8 w-8 items-center justify-center rounded-full bg-gray-700 text-sm font-bold text-gray-300">
-        {position}
-      </div>
-    );
+    // Use standard position badge for top 2
+    return <PositionBadge position={position} />;
   };
 
   return (
