@@ -14,7 +14,8 @@ export default function TournamentBracket({ matches, stage }: TournamentBracketP
       round_of_16: 'Round of 16',
       quarter_final: 'Quarter-Finals',
       semi_final: 'Semi-Finals',
-      final: 'Final'
+      final: 'Final',
+      third_place: '3rd Place Match'
     };
     return titles[stage] || stage;
   };

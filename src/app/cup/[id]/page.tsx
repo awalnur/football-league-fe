@@ -77,6 +77,13 @@ export default function CupTournamentPage() {
     loadData();
   }, [loadData]);
 
+  // Filter matches by stage
+  const r16Matches = matches.filter(m => m.cup_stage === 'round_of_16');
+  const quarterMatches = matches.filter(m => m.cup_stage === 'quarter_final');
+  const semiMatches = matches.filter(m => m.cup_stage === 'semi_final');
+  const finalMatches = matches.filter(m => m.cup_stage === 'final');
+  const thirdPlaceMatch = matches.filter(m => m.cup_stage === 'third_place');
+
   // Auto-select first available tab
   useEffect(() => {
     if (league && activeTab === 'overview') {
@@ -92,14 +99,7 @@ export default function CupTournamentPage() {
         setActiveTab('final');
       }
     }
-  }, [league, groups]);
-
-  // Filter matches by stage
-  const r16Matches = matches.filter(m => m.cup_stage === 'round_of_16');
-  const quarterMatches = matches.filter(m => m.cup_stage === 'quarter_final');
-  const semiMatches = matches.filter(m => m.cup_stage === 'semi_final');
-  const finalMatches = matches.filter(m => m.cup_stage === 'final');
-  const thirdPlaceMatch = matches.filter(m => m.cup_stage === 'third_place');
+  }, [league, groups, r16Matches, quarterMatches, semiMatches, finalMatches, activeTab]);
 
   // Calculate statistics
   const totalMatches = matches.length;
@@ -385,7 +385,7 @@ export default function CupTournamentPage() {
                     <span>Third Place Match</span>
                   </div>
                 </div>
-                <TournamentBracket matches={thirdPlaceMatch} stage="semi_final" />
+                <TournamentBracket matches={thirdPlaceMatch} stage="third_place" />
               </div>
             )}
           </div>
@@ -404,10 +404,32 @@ export default function CupTournamentPage() {
                   CHAMPION!
                 </h2>
                 <div className="text-3xl font-bold text-white mb-2">
-                  {/* Determine winner */}
-                  {finalMatches[0].home_score! > finalMatches[0].away_score! 
-                    ? finalMatches[0].home_team?.name 
-                    : finalMatches[0].away_team?.name}
+                  {/* Determine winner considering penalties and aggregate */}
+                  {(() => {
+                    const match = finalMatches[0];
+                    let winnerId = null;
+                    
+                    // Check penalties first
+                    if (match.is_penalty && match.home_penalty_score !== null && match.away_penalty_score !== null) {
+                      winnerId = match.home_penalty_score > match.away_penalty_score 
+                        ? match.home_team_id 
+                        : match.away_team_id;
+                    } 
+                    // Check aggregate winner
+                    else if (match.aggregate_winner_id) {
+                      winnerId = match.aggregate_winner_id;
+                    }
+                    // Regular time
+                    else if (match.home_score !== null && match.away_score !== null) {
+                      winnerId = match.home_score > match.away_score 
+                        ? match.home_team_id 
+                        : match.away_team_id;
+                    }
+                    
+                    return winnerId === match.home_team_id 
+                      ? match.home_team?.name 
+                      : match.away_team?.name;
+                  })()}
                 </div>
                 <p className="text-xl text-yellow-200/80">
                   {league.name} • {league.season}
