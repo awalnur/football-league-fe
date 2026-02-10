@@ -13,6 +13,8 @@ import {
 } from '@/lib/supabase';
 import StandingsTableWithZones from '@/components/StandingsTableWithZones';
 import CupGroupStandings from '@/components/CupGroupStandings';
+import LoadingState from '@/components/LoadingState';
+import EmptyState from '@/components/EmptyState';
 import { League, StandingWithTeam, CupGroupWithStandings, LeagueZone } from '@/types/supabase';
 
 export default function EnhancedStandingsPage() {
@@ -114,24 +116,30 @@ export default function EnhancedStandingsPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-900 text-white flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-green-500 mx-auto mb-4"></div>
-          <p className="text-gray-400">Loading standings...</p>
-        </div>
+      <div className="min-h-screen bg-gray-900 text-white">
+        <LoadingState message="Loading standings..." className="bg-gray-900" />
       </div>
     );
   }
 
   if (error) {
     return (
-      <div className="min-h-screen bg-gray-900 text-white flex items-center justify-center">
-        <div className="bg-red-900/20 border border-red-600 rounded-lg p-6 max-w-md">
-          <h2 className="text-xl font-bold text-red-400 mb-2">Error</h2>
-          <p className="text-gray-300">{error}</p>
-          <Link href="/standings" className="mt-4 inline-block text-green-400 hover:text-green-300">
-            ← Back to standings
-          </Link>
+      <div className="min-h-screen bg-gray-900 text-white">
+        <div className="max-w-7xl mx-auto px-4 py-8">
+          <EmptyState
+            title="Error Loading Standings"
+            description={error}
+            icon={
+              <svg className="h-16 w-16 text-red-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+              </svg>
+            }
+            action={{
+              label: 'Back to Standings',
+              onClick: () => window.location.href = '/standings'
+            }}
+            className="bg-gray-800"
+          />
         </div>
       </div>
     );
@@ -139,12 +147,17 @@ export default function EnhancedStandingsPage() {
 
   if (!league) {
     return (
-      <div className="min-h-screen bg-gray-900 text-white flex items-center justify-center">
-        <div className="text-center">
-          <p className="text-gray-400 mb-4">League not found</p>
-          <Link href="/standings" className="text-green-400 hover:text-green-300">
-            ← Back to standings
-          </Link>
+      <div className="min-h-screen bg-gray-900 text-white">
+        <div className="max-w-7xl mx-auto px-4 py-8">
+          <EmptyState
+            title="League Not Found"
+            description="The league you're looking for doesn't exist or has been removed."
+            action={{
+              label: 'Back to Standings',
+              onClick: () => window.location.href = '/standings'
+            }}
+            className="bg-gray-800"
+          />
         </div>
       </div>
     );
