@@ -8,8 +8,8 @@ import Link from 'next/link';
 import { getLeagueById, getStandingsWithZones, getMatchesByLeague, getCupGroupsWithStandings, supabase } from '@/lib/supabase';
 import { League, StandingWithTeam, LeagueZone, CupGroupWithStandings, MatchWithTeams } from '@/types/supabase';
 import StandingsTableWithZones from '@/components/StandingsTableWithZones';
-import CupGroupStandings from '@/components/CupGroupStandings';
-import KnockoutBracket from '@/components/KnockoutBracket';
+import EnhancedCupGroupStandings from '@/components/EnhancedCupGroupStandings';
+import TournamentBracket from '@/components/TournamentBracket';
 
 type Screenshot = {
   id: string;
@@ -412,7 +412,7 @@ export default function LeagueDetailPage() {
           {activeTab === 'standings' && (
             <div>
               {isCupFormat && hasGroupStage ? (
-                <CupGroupStandings groups={cupGroups} leagueType={league.type} />
+                <EnhancedCupGroupStandings groups={cupGroups} />
               ) : (
                 <StandingsTableWithZones standings={standings} zones={zones} leagueType={league.type} />
               )}
@@ -774,7 +774,7 @@ export default function LeagueDetailPage() {
                     if (stageMatches.length === 0) return null;
                     return (
                       <div key={stage}>
-                        <KnockoutBracket
+                        <TournamentBracket
                           matches={stageMatches}
                           stage={stage as 'round_of_16' | 'quarter_final' | 'semi_final' | 'final' | 'third_place'}
                         />
