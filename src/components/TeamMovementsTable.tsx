@@ -1,5 +1,7 @@
 'use client';
 
+import Image from 'next/image';
+
 import { TeamMovementWithDetails } from '@/types/supabase';
 
 interface TeamMovementsTableProps {
@@ -84,11 +86,11 @@ export default function TeamMovementsTable({
                     <td className="px-4 py-3">
                       <div className="flex items-center gap-2">
                         {movement.team.logo_url ? (
-                          <img
-                            src={movement.team.logo_url}
+                          <Image
+                          src={movement.team.logo_url}
                             alt={movement.team.name}
                             className="w-6 h-6 object-contain"
-                          />
+                           width={24} height={24} />
                         ) : (
                           <span className="text-lg">⚽</span>
                         )}

@@ -1,5 +1,7 @@
 'use client';
 
+import Image from 'next/image';
+
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { getLeagues, supabase } from '@/lib/supabase';
@@ -114,7 +116,7 @@ export default function LeaguesPage() {
                 <div className="flex items-center gap-4 flex-1">
                   <div className="w-16 h-16 rounded-xl bg-gray-700 flex items-center justify-center text-3xl">
                     {league.logo_url ? (
-                      <img src={league.logo_url} alt={league.name} className="w-full h-full rounded-xl object-cover" />
+                      <Image src={league.logo_url} alt={league.name} className="w-full h-full rounded-xl object-cover"  width={64} height={64} />
                     ) : (
                       league.type === 'efootball' ? '🎮' : '🏆'
                     )}

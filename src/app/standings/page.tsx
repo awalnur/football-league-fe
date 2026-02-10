@@ -1,5 +1,7 @@
 'use client';
 
+import Image from 'next/image';
+
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { getLeagues, getLeagueStandings, getTeamMatches, getGamePlayersByTeam } from '@/lib/supabase';
@@ -417,7 +419,7 @@ export default function StandingsPage() {
               <div className="flex items-center gap-4">
                 <div className="w-14 h-14 rounded-lg bg-slate-900/80 border border-slate-700/50 flex items-center justify-center">
                   {currentLeague.logo_url ? (
-                    <img src={currentLeague.logo_url} alt="" className="w-10 h-10 object-contain" />
+                    <Image src={currentLeague.logo_url} alt="" className="w-10 h-10 object-contain"  width={40} height={40} />
                   ) : currentLeague.type === 'efootball' ? (
                     <span className="text-purple-400">{Icons.gamepad}</span>
                   ) : (
@@ -568,7 +570,7 @@ export default function StandingsPage() {
                     </div>
                     <div className="w-12 h-12 rounded-lg bg-slate-800/80 flex items-center justify-center border border-slate-600/30 group-hover:border-slate-400/50 transition-colors">
                       {standings[1].team_logo ? (
-                        <img src={standings[1].team_logo} alt="" className="w-9 h-9 object-contain" />
+                        <Image src={standings[1].team_logo} alt="" className="w-9 h-9 object-contain"  width={36} height={36} />
                       ) : <span className="text-slate-500">{Icons.shield}</span>}
                     </div>
                   </div>
@@ -597,7 +599,7 @@ export default function StandingsPage() {
                     </div>
                     <div className="w-14 h-14 rounded-lg bg-slate-800/80 flex items-center justify-center border border-amber-500/30 group-hover:border-amber-400/50 transition-colors">
                       {standings[0].team_logo ? (
-                        <img src={standings[0].team_logo} alt="" className="w-11 h-11 object-contain" />
+                        <Image src={standings[0].team_logo} alt="" className="w-11 h-11 object-contain"  width={44} height={44} />
                       ) : <span className="text-amber-500">{Icons.shield}</span>}
                     </div>
                   </div>
@@ -623,7 +625,7 @@ export default function StandingsPage() {
                     </div>
                     <div className="w-12 h-12 rounded-lg bg-slate-800/80 flex items-center justify-center border border-orange-500/20 group-hover:border-orange-400/50 transition-colors">
                       {standings[2].team_logo ? (
-                        <img src={standings[2].team_logo} alt="" className="w-9 h-9 object-contain" />
+                        <Image src={standings[2].team_logo} alt="" className="w-9 h-9 object-contain"  width={36} height={36} />
                       ) : <span className="text-orange-500">{Icons.shield}</span>}
                     </div>
                   </div>
@@ -701,7 +703,7 @@ export default function StandingsPage() {
                             <div className="flex items-center gap-3">
                               <div className="h-9 w-9 rounded bg-slate-700/60 flex items-center justify-center group-hover:ring-2 group-hover:ring-emerald-500/40 transition-all border border-slate-600/30">
                                 {team.team_logo ? (
-                                  <img src={team.team_logo} alt="" className="h-7 w-7 object-contain" />
+                                  <Image src={team.team_logo} alt="" className="h-7 w-7 object-contain"  width={28} height={28} />
                                 ) : (
                                   <span className="text-slate-500">{Icons.shield}</span>
                                 )}
@@ -888,7 +890,7 @@ export default function StandingsPage() {
                       </div>
                       <div className="w-6 h-6 rounded bg-slate-700/50 flex items-center justify-center shrink-0">
                         {team.team_logo ? (
-                          <img src={team.team_logo} alt="" className="w-5 h-5 object-contain" />
+                          <Image src={team.team_logo} alt="" className="w-5 h-5 object-contain"  width={20} height={20} />
                         ) : (
                           <span className="text-slate-500 text-xs">{Icons.shield}</span>
                         )}

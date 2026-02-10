@@ -1,5 +1,7 @@
 'use client';
 
+import Image from 'next/image';
+
 import { useState, useEffect } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
@@ -179,7 +181,7 @@ export default function NewGamerPage() {
           <div className="flex items-center gap-4">
             <div className="w-24 h-24 rounded-full bg-gray-700 flex items-center justify-center overflow-hidden">
               {avatarPreview ? (
-                <img src={avatarPreview} alt="Preview" className="w-full h-full object-cover" />
+                <Image src={avatarPreview} alt="Preview" className="w-full h-full object-cover"  width={96} height={96} />
               ) : (
                 <span className="text-4xl">👤</span>
               )}

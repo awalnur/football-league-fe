@@ -1,5 +1,7 @@
 'use client';
 
+import Image from 'next/image';
+
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
@@ -257,7 +259,7 @@ export default function SchedulePage() {
                           <span className="text-white font-medium text-right">{match.home_team?.name}</span>
                           <div className="w-8 h-8 rounded-full bg-gray-600 flex items-center justify-center text-sm">
                             {match.home_team?.logo_url ? (
-                              <img src={match.home_team.logo_url} alt="" className="w-6 h-6 object-contain" />
+                              <Image src={match.home_team.logo_url} alt="" className="w-6 h-6 object-contain"  width={24} height={24} />
                             ) : '🏠'}
                           </div>
                         </div>
@@ -281,7 +283,7 @@ export default function SchedulePage() {
                         <div className="flex items-center gap-2 flex-1">
                           <div className="w-8 h-8 rounded-full bg-gray-600 flex items-center justify-center text-sm">
                             {match.away_team?.logo_url ? (
-                              <img src={match.away_team.logo_url} alt="" className="w-6 h-6 object-contain" />
+                              <Image src={match.away_team.logo_url} alt="" className="w-6 h-6 object-contain"  width={24} height={24} />
                             ) : '✈️'}
                           </div>
                           <span className="text-white font-medium">{match.away_team?.name}</span>

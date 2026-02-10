@@ -1,5 +1,7 @@
 'use client';
 
+import Image from 'next/image';
+
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
@@ -229,7 +231,7 @@ export default function GamersPage() {
           <div className="bg-gray-800 rounded-xl p-4 border border-gray-700 flex items-center gap-4">
             <div className="w-12 h-12 rounded-lg bg-gray-700 flex items-center justify-center">
               {currentTeam?.logo_url ? (
-                <img src={currentTeam.logo_url} alt="" className="w-8 h-8 object-contain" />
+                <Image src={currentTeam.logo_url} alt="" className="w-8 h-8 object-contain"  width={32} height={32} />
               ) : (
                 '🛡️'
               )}
@@ -253,7 +255,7 @@ export default function GamersPage() {
                   {/* Avatar */}
                   <div className="w-16 h-16 rounded-full bg-gray-700 flex items-center justify-center text-2xl overflow-hidden">
                     {gamer.avatar_url ? (
-                      <img src={gamer.avatar_url} alt={gamer.real_name} className="w-full h-full object-cover" />
+                      <Image src={gamer.avatar_url} alt={gamer.real_name} className="w-full h-full object-cover"  width={64} height={64} />
                     ) : (
                       '👤'
                     )}

@@ -1,5 +1,7 @@
 'use client';
 
+import Image from 'next/image';
+
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { getLeagues, getMatchesByLeague } from '@/lib/supabase';
@@ -323,7 +325,7 @@ export default function SchedulePage() {
                             <div className="flex items-center gap-2 flex-1 justify-end">
                               <span className="text-sm text-white font-medium text-right truncate max-w-[100px] sm:max-w-[150px]">{match.home_team?.name}</span>
                               <div className="w-8 h-8 rounded bg-slate-700 flex items-center justify-center flex-shrink-0">
-                                {match.home_team?.logo_url ? <img src={match.home_team.logo_url} alt="" className="w-6 h-6 object-contain" /> : <span className="text-slate-400">{Icons.home}</span>}
+                                {match.home_team?.logo_url ? <Image src={match.home_team.logo_url} alt="" className="w-6 h-6 object-contain"  width={24} height={24} /> : <span className="text-slate-400">{Icons.home}</span>}
                               </div>
                             </div>
 
@@ -348,7 +350,7 @@ export default function SchedulePage() {
                             {/* Away Team */}
                             <div className="flex items-center gap-2 flex-1">
                               <div className="w-8 h-8 rounded bg-slate-700 flex items-center justify-center flex-shrink-0">
-                                {match.away_team?.logo_url ? <img src={match.away_team.logo_url} alt="" className="w-6 h-6 object-contain" /> : <span className="text-slate-400">{Icons.plane}</span>}
+                                {match.away_team?.logo_url ? <Image src={match.away_team.logo_url} alt="" className="w-6 h-6 object-contain"  width={24} height={24} /> : <span className="text-slate-400">{Icons.plane}</span>}
                               </div>
                               <span className="text-sm text-white font-medium truncate max-w-[100px] sm:max-w-[150px]">{match.away_team?.name}</span>
                             </div>

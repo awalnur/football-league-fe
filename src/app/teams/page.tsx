@@ -1,5 +1,7 @@
 'use client';
 
+import Image from 'next/image';
+
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { getLeagues, getTeamsByLeague, getTeamMatches, getGamePlayersByTeam, getLeagueStandings } from '@/lib/supabase';
@@ -325,7 +327,7 @@ export default function TeamsPage() {
                       style={{ backgroundColor: team.logo_url ? 'transparent' : (team.primary_color || '#374151') }}
                     >
                       {team.logo_url ? (
-                        <img src={team.logo_url} alt={team.name} className="w-14 h-14 object-contain" />
+                        <Image src={team.logo_url} alt={team.name} className="w-14 h-14 object-contain"  width={56} height={56} />
                       ) : (
                         <span className="text-slate-300">{Icons.shield}</span>
                       )}
@@ -352,7 +354,7 @@ export default function TeamsPage() {
                       style={{ backgroundColor: selectedTeam.logo_url ? 'transparent' : (selectedTeam.primary_color || '#374151') }}
                     >
                       {selectedTeam.logo_url ? (
-                        <img src={selectedTeam.logo_url} alt={selectedTeam.name} className="w-16 h-16 object-contain" />
+                        <Image src={selectedTeam.logo_url} alt={selectedTeam.name} className="w-16 h-16 object-contain"  width={64} height={64} />
                       ) : (
                         <span className="text-slate-300 text-3xl">{Icons.shield}</span>
                       )}
@@ -488,7 +490,7 @@ export default function TeamsPage() {
                           <div key={gamer.id} className="flex items-center gap-2 bg-slate-900/50 rounded-lg p-2">
                             <div className="w-8 h-8 rounded-full bg-slate-700 flex items-center justify-center overflow-hidden text-sm">
                               {gamer.avatar_url ? (
-                                <img src={gamer.avatar_url} alt={gamer.real_name} className="w-full h-full object-cover" />
+                                <Image src={gamer.avatar_url} alt={gamer.real_name} className="w-full h-full object-cover"  width={32} height={32} />
                               ) : (
                                 <span className="text-slate-400">👤</span>
                               )}
@@ -587,7 +589,7 @@ export default function TeamsPage() {
                                     <div className="flex flex-col items-center gap-2">
                                       <div className={`w-12 h-12 rounded-lg flex items-center justify-center ${match.home_team_logo ? '' : 'bg-slate-700'}`}>
                                         {match.home_team_logo ? (
-                                          <img src={match.home_team_logo} alt="" className="w-10 h-10 object-contain" />
+                                          <Image src={match.home_team_logo} alt="" className="w-10 h-10 object-contain"  width={40} height={40} />
                                         ) : (
                                           <span className="text-slate-400">{Icons.shield}</span>
                                         )}
@@ -619,7 +621,7 @@ export default function TeamsPage() {
                                     <div className="flex flex-col items-center gap-2">
                                       <div className={`w-12 h-12 rounded-lg flex items-center justify-center ${match.away_team_logo ? '' : 'bg-slate-700'}`}>
                                         {match.away_team_logo ? (
-                                          <img src={match.away_team_logo} alt="" className="w-10 h-10 object-contain" />
+                                          <Image src={match.away_team_logo} alt="" className="w-10 h-10 object-contain"  width={40} height={40} />
                                         ) : (
                                           <span className="text-slate-400">{Icons.shield}</span>
                                         )}
@@ -650,11 +652,11 @@ export default function TeamsPage() {
                                         Screenshot Hasil
                                       </p>
                                       <div className="relative rounded-lg overflow-hidden border border-slate-700">
-                                        <img
-                                          src={match.screenshot_url}
+                                        <Image
+                          src={match.screenshot_url}
                                           alt="Match Screenshot"
                                           className="w-full h-auto object-cover"
-                                        />
+                                         width={32} height={32} />
                                       </div>
                                     </div>
                                   )}
@@ -671,7 +673,7 @@ export default function TeamsPage() {
                                           <div key={gamer.id} className="flex items-center gap-1.5 bg-slate-800 rounded-full px-2 py-1">
                                             <div className="w-5 h-5 rounded-full bg-slate-700 flex items-center justify-center overflow-hidden">
                                               {gamer.avatar_url ? (
-                                                <img src={gamer.avatar_url} alt="" className="w-full h-full object-cover" />
+                                                <Image src={gamer.avatar_url} alt="" className="w-full h-full object-cover"  width={20} height={20} />
                                               ) : (
                                                 <span className="text-xs text-slate-400">👤</span>
                                               )}

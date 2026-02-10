@@ -197,7 +197,7 @@ export default function ZonesPage() {
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
               </svg>
               <p className="text-slate-400 mb-4">Belum ada zones untuk liga ini</p>
-              <p className="text-sm text-slate-500 mb-4">Klik tombol "Generate Zones" untuk membuat zones otomatis</p>
+              <p className="text-sm text-slate-500 mb-4">Klik tombol &quot;Generate Zones&quot; untuk membuat zones otomatis</p>
             </div>
           ) : (
             <div className="bg-slate-900 border border-slate-800 rounded-lg overflow-hidden">

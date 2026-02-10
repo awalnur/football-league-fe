@@ -1,5 +1,7 @@
 'use client';
 
+import Image from 'next/image';
+
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { getLeagues, getMatchesByLeague } from '@/lib/supabase';
@@ -212,7 +214,7 @@ export default function MatchesPage() {
                       <span className="text-white font-semibold text-right">{match.home_team?.name}</span>
                       <div className="w-10 h-10 rounded-lg bg-gray-700 flex items-center justify-center">
                         {match.home_team?.logo_url ? (
-                          <img src={match.home_team.logo_url} alt="" className="w-7 h-7 object-contain" />
+                          <Image src={match.home_team.logo_url} alt="" className="w-7 h-7 object-contain"  width={28} height={28} />
                         ) : '🏠'}
                       </div>
                     </div>
@@ -236,7 +238,7 @@ export default function MatchesPage() {
                     <div className="flex items-center gap-3 flex-1">
                       <div className="w-10 h-10 rounded-lg bg-gray-700 flex items-center justify-center">
                         {match.away_team?.logo_url ? (
-                          <img src={match.away_team.logo_url} alt="" className="w-7 h-7 object-contain" />
+                          <Image src={match.away_team.logo_url} alt="" className="w-7 h-7 object-contain"  width={28} height={28} />
                         ) : '✈️'}
                       </div>
                       <span className="text-white font-semibold">{match.away_team?.name}</span>

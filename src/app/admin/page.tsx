@@ -1,5 +1,7 @@
 'use client';
 
+import Image from 'next/image';
+
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { getLeagues, getMatchesByLeague } from '@/lib/supabase';
@@ -313,7 +315,7 @@ export default function AdminDashboard() {
                     <span className="text-white text-sm font-medium text-right truncate">{match.home_team?.name || 'TBD'}</span>
                     <div className="w-7 h-7 rounded-lg bg-slate-700 flex items-center justify-center shrink-0">
                       {match.home_team?.logo_url ? (
-                        <img src={match.home_team.logo_url} alt="" className="w-5 h-5 object-contain" />
+                        <Image src={match.home_team.logo_url} alt="" className="w-5 h-5 object-contain"  width={20} height={20} />
                       ) : (
                         <svg className="w-4 h-4 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
                           <path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
@@ -337,7 +339,7 @@ export default function AdminDashboard() {
                   <div className="flex items-center gap-2 flex-1">
                     <div className="w-7 h-7 rounded-lg bg-slate-700 flex items-center justify-center shrink-0">
                       {match.away_team?.logo_url ? (
-                        <img src={match.away_team.logo_url} alt="" className="w-5 h-5 object-contain" />
+                        <Image src={match.away_team.logo_url} alt="" className="w-5 h-5 object-contain"  width={20} height={20} />
                       ) : (
                         <svg className="w-4 h-4 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
                           <path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />

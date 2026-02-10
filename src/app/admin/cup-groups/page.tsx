@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import Image from 'next/image';
 import { getLeagues, getCupGroups, createCupGroup, assignTeamToGroup, getTeamsByLeague, randomizeTeamsToGroups, shuffleTeamsInGroups, clearAllGroupAssignments } from '@/lib/supabase';
 import { League, CupGroup, Team } from '@/types/supabase';
 
@@ -355,8 +356,8 @@ export default function CupGroupsPage() {
               <p className="mb-1">💡 <strong>Tips:</strong></p>
               <ul className="list-disc list-inside space-y-1 ml-2">
                 <li>Buat grup terlebih dahulu sebelum mengacak tim</li>
-                <li>"Acak Tim ke Grup" akan mendistribusikan semua tim secara merata</li>
-                <li>"Acak Posisi Tim" hanya mengacak urutan dalam grup yang sudah ada</li>
+                <li>&quot;Acak Tim ke Grup&quot; akan mendistribusikan semua tim secara merata</li>
+                <li>&quot;Acak Posisi Tim&quot; hanya mengacak urutan dalam grup yang sudah ada</li>
               </ul>
             </div>
           </div>
@@ -501,7 +502,7 @@ export default function CupGroupsPage() {
                             <div key={team.id} className="flex items-center gap-2 text-sm">
                               <span className="text-slate-500 w-5">{idx + 1}.</span>
                               {team.logo_url ? (
-                                <img src={team.logo_url} alt="" className="w-5 h-5 object-contain" />
+                                <Image src={team.logo_url} alt="" className="w-5 h-5 object-contain" width={20} height={20} />
                               ) : (
                                 <span className="text-slate-500">⚽</span>
                               )}
@@ -527,7 +528,7 @@ export default function CupGroupsPage() {
                 {teamsWithoutGroup.map(team => (
                   <div key={team.id} className="text-sm text-slate-400 flex items-center gap-2">
                     {team.logo_url ? (
-                      <img src={team.logo_url} alt="" className="w-4 h-4 object-contain" />
+                      <Image src={team.logo_url} alt="" className="w-4 h-4 object-contain"  width={16} height={16} />
                     ) : (
                       <span>⚽</span>
                     )}

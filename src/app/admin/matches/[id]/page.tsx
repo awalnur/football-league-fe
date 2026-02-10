@@ -1,5 +1,7 @@
 'use client';
 
+import Image from 'next/image';
+
 import { useState, useEffect, use } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
@@ -164,7 +166,7 @@ export default function MatchDetailPage({ params }: { params: Promise<{ id: stri
           <div className="flex-1 text-center">
             <div className="w-20 h-20 rounded-xl bg-gray-700 flex items-center justify-center mx-auto mb-3">
               {match.home_team?.logo_url ? (
-                <img src={match.home_team.logo_url} alt="" className="w-14 h-14 object-contain" />
+                <Image src={match.home_team.logo_url} alt="" className="w-14 h-14 object-contain"  width={56} height={56} />
               ) : (
                 <span className="text-4xl">🏠</span>
               )}
@@ -201,7 +203,7 @@ export default function MatchDetailPage({ params }: { params: Promise<{ id: stri
           <div className="flex-1 text-center">
             <div className="w-20 h-20 rounded-xl bg-gray-700 flex items-center justify-center mx-auto mb-3">
               {match.away_team?.logo_url ? (
-                <img src={match.away_team.logo_url} alt="" className="w-14 h-14 object-contain" />
+                <Image src={match.away_team.logo_url} alt="" className="w-14 h-14 object-contain"  width={56} height={56} />
               ) : (
                 <span className="text-4xl">✈️</span>
               )}
@@ -218,11 +220,11 @@ export default function MatchDetailPage({ params }: { params: Promise<{ id: stri
             <div className="grid grid-cols-2 gap-4">
               {match.screenshots.map((ss) => (
                 <div key={ss.id} className="relative group">
-                  <img
-                    src={ss.image_url}
+                  <Image
+                          src={ss.image_url}
                     alt={ss.caption || 'Screenshot'}
                     className="w-full h-40 object-cover rounded-lg"
-                  />
+                   width={160} height={160} />
                   {ss.caption && (
                     <p className="text-xs text-gray-400 mt-1">{ss.caption}</p>
                   )}
@@ -284,11 +286,11 @@ export default function MatchDetailPage({ params }: { params: Promise<{ id: stri
 
               {screenshotPreview ? (
                 <div className="relative">
-                  <img
-                    src={screenshotPreview}
+                  <Image
+                          src={screenshotPreview}
                     alt="Preview"
                     className="w-full h-64 object-cover rounded-xl"
-                  />
+                   width={256} height={256} />
                   <button
                     type="button"
                     onClick={() => {

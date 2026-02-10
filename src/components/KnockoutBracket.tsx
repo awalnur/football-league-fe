@@ -1,5 +1,7 @@
 'use client';
 
+import Image from 'next/image';
+
 import { MatchWithTeams } from '@/types/supabase';
 
 interface KnockoutBracketProps {
@@ -63,11 +65,11 @@ export default function KnockoutBracket({ matches, stage }: KnockoutBracketProps
         }`}>
           <div className="flex items-center gap-2 flex-1 min-w-0">
             {match.home_team?.logo_url ? (
-              <img
-                src={match.home_team.logo_url}
+              <Image
+                          src={match.home_team.logo_url}
                 alt=""
                 className="w-6 h-6 object-contain shrink-0"
-              />
+               width={24} height={24} />
             ) : (
               <span className="text-lg shrink-0">⚽</span>
             )}
@@ -106,11 +108,11 @@ export default function KnockoutBracket({ matches, stage }: KnockoutBracketProps
         }`}>
           <div className="flex items-center gap-2 flex-1 min-w-0">
             {match.away_team?.logo_url ? (
-              <img
-                src={match.away_team.logo_url}
+              <Image
+                          src={match.away_team.logo_url}
                 alt=""
                 className="w-6 h-6 object-contain shrink-0"
-              />
+               width={24} height={24} />
             ) : (
               <span className="text-lg shrink-0">⚽</span>
             )}
