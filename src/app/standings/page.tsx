@@ -786,10 +786,7 @@ export default function StandingsPage() {
                 </div>
               </div>
 
-              <div className="rounded-lg bg-gradient-to-br from-emerald-500/10 to-transparent border border-emerald-500/20 p-4 backdrop-blur-sm group hover:border-emerald-500/40 transition-all cursor-pointer" onClick={() => {
-                // const topScorer = [...standings].sort((a, b) => b.goals_for - a.goals_for)[0];
-                // if (topScorer) openTeamDetail(topScorer);
-              }}>
+              <div className="rounded-lg bg-gradient-to-br from-emerald-500/10 to-transparent border border-emerald-500/20 p-4 backdrop-blur-sm group hover:border-emerald-500/40 transition-all cursor-pointer">
                 <div className="flex items-center justify-between">
                   <div className="flex-1 min-w-0">
                     <p className="text-xs font-medium text-emerald-400/80">Gol Terbanyak</p>
@@ -805,10 +802,7 @@ export default function StandingsPage() {
                 </div>
               </div>
 
-              <div className="rounded-lg bg-gradient-to-br from-blue-500/10 to-transparent border border-blue-500/20 p-4 backdrop-blur-sm group hover:border-blue-500/40 transition-all cursor-pointer" onClick={() => {
-                // const bestDefense = [...standings].sort((a, b) => a.goals_against - b.goals_against)[0];
-                // if (bestDefense) openTeamDetail(bestDefense);
-              }}>
+              <div className="rounded-lg bg-gradient-to-br from-blue-500/10 to-transparent border border-blue-500/20 p-4 backdrop-blur-sm group hover:border-blue-500/40 transition-all cursor-pointer">
                 <div className="flex items-center justify-between">
                   <div className="flex-1 min-w-0">
                     <p className="text-xs font-medium text-blue-400/80">Pertahanan Terbaik</p>
@@ -824,10 +818,7 @@ export default function StandingsPage() {
                 </div>
               </div>
 
-              <div className="rounded-lg bg-gradient-to-br from-rose-500/10 to-transparent border border-rose-500/20 p-4 backdrop-blur-sm group hover:border-rose-500/40 transition-all cursor-pointer" onClick={() => {
-                // const bestGD = [...standings].sort((a, b) => b.goal_difference - a.goal_difference)[0];
-                // if (bestGD) openTeamDetail(bestGD);
-              }}>
+              <div className="rounded-lg bg-gradient-to-br from-rose-500/10 to-transparent border border-rose-500/20 p-4 backdrop-blur-sm group hover:border-rose-500/40 transition-all cursor-pointer">
                 <div className="flex items-center justify-between">
                   <div className="flex-1 min-w-0">
                     <p className="text-xs font-medium text-rose-400/80">Selisih Gol Terbaik</p>

@@ -24,7 +24,8 @@ export default function ZonesPage() {
           setSelectedLeague(leagueFormat[0].id);
         }
       }
-    } catch {
+    } catch (error) {
+      console.error('Failed to load leagues:', error);
       setError('Failed to load leagues');
     }
   }, []);
