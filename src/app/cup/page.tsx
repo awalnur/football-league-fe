@@ -2,7 +2,7 @@
 
 import Image from 'next/image';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import {
@@ -27,7 +27,7 @@ export default function CupTournamentPage() {
   const [error, setError] = useState('');
   const [activeTab, setActiveTab] = useState<TabType>('groups');
 
-  const loadData = async () => {
+  const loadData = useCallback(async () => {
     setLoading(true);
     setError('');
 
@@ -66,14 +66,13 @@ export default function CupTournamentPage() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [leagueId]);
 
   useEffect(() => {
     if (leagueId) {
       loadData();
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [leagueId]);
+  }, [leagueId, loadData]);
 
   // Filter matches by stage
   const r16Matches = matches.filter(m => m.cup_stage === 'round_of_16');

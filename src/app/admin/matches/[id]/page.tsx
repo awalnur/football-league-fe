@@ -2,7 +2,7 @@
 
 import Image from 'next/image';
 
-import { useState, useEffect, use } from 'react';
+import { useState, useEffect, use, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { getMatchById, recordMatchResult, uploadMatchScreenshot, getLeagueById } from '@/lib/supabase';
@@ -42,12 +42,8 @@ export default function MatchDetailPage({ params }: { params: Promise<{ id: stri
   const [screenshotPreview, setScreenshotPreview] = useState<string>('');
   const [screenshotCaption, setScreenshotCaption] = useState<string>('');
 
-  useEffect(() => {
-    loadMatch();
-  }, [id]);
-
-  async function loadMatch() {
-    const { data, error } = await getMatchById(id);
+  const loadMatch = useCallback(async () => {
+    const { data } = await getMatchById(id);
     if (data) {
       const matchData = data as unknown as Match;
       setMatch(matchData);
@@ -61,7 +57,11 @@ export default function MatchDetailPage({ params }: { params: Promise<{ id: stri
       }
     }
     setLoading(false);
-  }
+  }, [id]);
+
+  useEffect(() => {
+    loadMatch();
+  }, [loadMatch]);
 
   const handleScreenshotChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];

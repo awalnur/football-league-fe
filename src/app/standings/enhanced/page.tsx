@@ -2,7 +2,7 @@
 
 import Image from 'next/image';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import {
@@ -26,13 +26,7 @@ export default function EnhancedStandingsPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
 
-  useEffect(() => {
-    if (leagueId) {
-      loadData();
-    }
-  }, [leagueId]);
-
-  const loadData = async () => {
+  const loadData = useCallback(async () => {
     setLoading(true);
     setError('');
 
@@ -75,7 +69,13 @@ export default function EnhancedStandingsPage() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [leagueId]);
+
+  useEffect(() => {
+    if (leagueId) {
+      loadData();
+    }
+  }, [leagueId, loadData]);
 
   const getFormatBadge = () => {
     if (!league) return null;

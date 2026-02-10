@@ -2,7 +2,7 @@
 
 import Image from 'next/image';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
 import { getLeagues, getTeamsByLeague, supabase } from '@/lib/supabase';
@@ -32,7 +32,7 @@ export default function TeamsPage() {
   const [loading, setLoading] = useState(true);
   const [deleting, setDeleting] = useState<string | null>(null);
 
-  async function loadLeagues() {
+  const loadLeagues = useCallback(async () => {
     const { data } = await getLeagues();
     if (data) {
       setLeagues(data as League[]);
@@ -43,29 +43,31 @@ export default function TeamsPage() {
       }
     }
     if (!leagueParam) setLoading(false);
-  }
+  }, [leagueParam, selectedLeague]);
 
-  async function loadTeams(leagueId: string) {
+  const loadTeams = useCallback(async (leagueId: string) => {
     setLoading(true);
     const { data } = await getTeamsByLeague(leagueId);
     if (data) {
       setTeams(data as Team[]);
     }
     setLoading(false);
-  }
-
-  useEffect(() => {
-    loadLeagues();
   }, []);
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    loadLeagues();
+  }, [loadLeagues]);
+
+  useEffect(() => {
     if (selectedLeague) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       loadTeams(selectedLeague);
     } else {
       setTeams([]);
       setLoading(false);
     }
-  }, [selectedLeague]);
+  }, [selectedLeague, loadTeams]);
 
   async function handleDelete(id: string, name: string) {
     if (!confirm(`Yakin ingin menghapus tim "${name}"?`)) return;

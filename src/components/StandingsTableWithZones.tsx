@@ -32,8 +32,7 @@ interface StandingsTableWithZonesProps {
 
 export default function StandingsTableWithZones({
   standings,
-  zones = [],
-  leagueType
+  zones = []
 }: StandingsTableWithZonesProps) {
 
   const getPositionStyle = (position: number, zone?: LeagueZone) => {

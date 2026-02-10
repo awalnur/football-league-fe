@@ -2,7 +2,7 @@
 
 import Image from 'next/image';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useParams } from 'next/navigation';
 import Link from 'next/link';
 import { getLeagueById, getStandingsWithZones, getMatchesByLeague, getCupGroupsWithStandings, supabase } from '@/lib/supabase';
@@ -51,14 +51,7 @@ export default function LeagueDetailPage() {
   const [matchDetails, setMatchDetails] = useState<Record<string, { screenshots: Screenshot[] }>>({});
   const [loadingDetail, setLoadingDetail] = useState(false);
 
-  useEffect(() => {
-    if (leagueId) {
-      loadLeagueData();
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [leagueId]);
-
-  const loadLeagueData = async () => {
+  const loadLeagueData = useCallback(async () => {
     setLoading(true);
     try {
       // Load league info
@@ -101,9 +94,9 @@ export default function LeagueDetailPage() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [leagueId]);
 
-  const loadMatchDetail = async (matchId: string) => {
+  const loadMatchDetail = useCallback(async (matchId: string) => {
     if (matchDetails[matchId]) return; // Already loaded
 
     setLoadingDetail(true);
@@ -123,16 +116,22 @@ export default function LeagueDetailPage() {
     }));
 
     setLoadingDetail(false);
-  };
+  }, [matchDetails]);
 
-  const toggleMatchDetail = async (matchId: string) => {
+  const toggleMatchDetail = useCallback(async (matchId: string) => {
     if (expandedMatch === matchId) {
       setExpandedMatch(null);
     } else {
       setExpandedMatch(matchId);
       await loadMatchDetail(matchId);
     }
-  };
+  }, [expandedMatch, loadMatchDetail]);
+
+  useEffect(() => {
+    if (leagueId) {
+      loadLeagueData();
+    }
+  }, [leagueId, loadLeagueData]);
 
   if (loading) {
     return (

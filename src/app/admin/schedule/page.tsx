@@ -2,7 +2,7 @@
 
 import Image from 'next/image';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
 import { getLeagues, getMatchesByLeague, getTeamsByLeague } from '@/lib/supabase';
@@ -36,7 +36,7 @@ export default function SchedulePage() {
   const [loading, setLoading] = useState(true);
   const [teamsCount, setTeamsCount] = useState(0);
 
-  async function loadLeagues() {
+  const loadLeagues = useCallback(async () => {
     const { data } = await getLeagues();
     if (data) {
       setLeagues(data as League[]);
@@ -47,37 +47,39 @@ export default function SchedulePage() {
       }
     }
     if (!leagueParam) setLoading(false);
-  }
+  }, [leagueParam, selectedLeague]);
 
-  async function loadSchedule(leagueId: string) {
+  const loadSchedule = useCallback(async (leagueId: string) => {
     setLoading(true);
     const { data } = await getMatchesByLeague(leagueId);
     if (data) {
       setMatches(data as unknown as Match[]);
     }
     setLoading(false);
-  }
+  }, []);
 
-  async function loadTeamsCount(leagueId: string) {
+  const loadTeamsCount = useCallback(async (leagueId: string) => {
     const { data } = await getTeamsByLeague(leagueId);
     if (data) {
       setTeamsCount(data.length);
     }
-  }
-
-  useEffect(() => {
-    loadLeagues();
   }, []);
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    loadLeagues();
+  }, [loadLeagues]);
+
+  useEffect(() => {
     if (selectedLeague) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       loadSchedule(selectedLeague);
       loadTeamsCount(selectedLeague);
     } else {
       setMatches([]);
       setLoading(false);
     }
-  }, [selectedLeague]);
+  }, [selectedLeague, loadSchedule, loadTeamsCount]);
 
   const currentLeague = leagues.find(l => l.id === selectedLeague);
 

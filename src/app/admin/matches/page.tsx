@@ -2,7 +2,7 @@
 
 import Image from 'next/image';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import Link from 'next/link';
 import { getLeagues, getMatchesByLeague } from '@/lib/supabase';
 
@@ -31,7 +31,7 @@ export default function MatchesPage() {
   const [filter, setFilter] = useState<'all' | 'scheduled' | 'completed'>('all');
   const [loading, setLoading] = useState(true);
 
-  async function loadLeagues() {
+  const loadLeagues = useCallback(async () => {
     const { data } = await getLeagues();
     if (data) {
       setLeagues(data as League[]);
@@ -40,29 +40,31 @@ export default function MatchesPage() {
       }
     }
     setLoading(false);
-  }
+  }, []);
 
-  async function loadMatches(leagueId: string) {
+  const loadMatches = useCallback(async (leagueId: string) => {
     setLoading(true);
     const { data } = await getMatchesByLeague(leagueId);
     if (data) {
       setMatches(data as unknown as Match[]);
     }
     setLoading(false);
-  }
-
-  useEffect(() => {
-    loadLeagues();
   }, []);
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    loadLeagues();
+  }, [loadLeagues]);
+
+  useEffect(() => {
     if (selectedLeague) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       loadMatches(selectedLeague);
     } else {
       setMatches([]);
       setLoading(false);
     }
-  }, [selectedLeague]);
+  }, [selectedLeague, loadMatches]);
 
   const currentLeague = leagues.find(l => l.id === selectedLeague);
 

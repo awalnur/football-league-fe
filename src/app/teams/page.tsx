@@ -146,7 +146,7 @@ export default function TeamsPage() {
       setTeamGamers([]);
       setTeamStats(null);
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+     
   }, [selectedLeague]);
 
   async function loadLeagues() {

@@ -2,7 +2,7 @@
 
 import Image from 'next/image';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import Link from 'next/link';
 import { getLeagues, supabase } from '@/lib/supabase';
 
@@ -21,17 +21,18 @@ export default function LeaguesPage() {
   const [loading, setLoading] = useState(true);
   const [deleting, setDeleting] = useState<string | null>(null);
 
-  async function loadLeagues() {
+  const loadLeagues = useCallback(async () => {
     const { data } = await getLeagues();
     if (data) {
       setLeagues(data as League[]);
     }
     setLoading(false);
-  }
+  }, []);
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     loadLeagues();
-  }, []);
+  }, [loadLeagues]);
 
   async function handleDelete(id: string, name: string) {
     if (!confirm(`Yakin ingin menghapus liga "${name}"? Semua data tim dan pertandingan akan ikut terhapus.`)) {

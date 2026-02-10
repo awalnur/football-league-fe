@@ -182,7 +182,7 @@ export default function MatchesPage() {
       setExpandedMatch(null);
       setMatchDetails({});
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+     
   }, [selectedLeague]);
 
   const handleTabChange = (tab: 'football' | 'efootball') => {

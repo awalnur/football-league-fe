@@ -4,7 +4,7 @@ import Image from 'next/image';
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { getLeagues, getLeagueStandings, getTeamMatches, getGamePlayersByTeam } from '@/lib/supabase';
+import { getLeagues, getLeagueStandings } from '@/lib/supabase';
 
 // SVG Icon Components
 const Icons = {
@@ -122,31 +122,6 @@ interface Standing {
   goal_difference: number;
   points: number;
   form: string | null;
-}
-
-interface TeamMatch {
-  match_id: string;
-  match_date: string;
-  match_week: number;
-  home_team_id: string;
-  home_team_name: string;
-  home_team_logo: string | null;
-  away_team_id: string;
-  away_team_name: string;
-  away_team_logo: string | null;
-  home_score: number | null;
-  away_score: number | null;
-  status: string;
-  is_home: boolean;
-  result: string | null;
-}
-
-interface GamePlayer {
-  id: string;
-  real_name: string;
-  gamertag: string;
-  avatar_url: string | null;
-  is_captain: boolean;
 }
 
 export default function StandingsPage() {
@@ -812,7 +787,7 @@ export default function StandingsPage() {
               </div>
 
               <div className="rounded-lg bg-gradient-to-br from-emerald-500/10 to-transparent border border-emerald-500/20 p-4 backdrop-blur-sm group hover:border-emerald-500/40 transition-all cursor-pointer" onClick={() => {
-                const topScorer = [...standings].sort((a, b) => b.goals_for - a.goals_for)[0];
+                // const topScorer = [...standings].sort((a, b) => b.goals_for - a.goals_for)[0];
                 // if (topScorer) openTeamDetail(topScorer);
               }}>
                 <div className="flex items-center justify-between">
@@ -831,7 +806,7 @@ export default function StandingsPage() {
               </div>
 
               <div className="rounded-lg bg-gradient-to-br from-blue-500/10 to-transparent border border-blue-500/20 p-4 backdrop-blur-sm group hover:border-blue-500/40 transition-all cursor-pointer" onClick={() => {
-                const bestDefense = [...standings].sort((a, b) => a.goals_against - b.goals_against)[0];
+                // const bestDefense = [...standings].sort((a, b) => a.goals_against - b.goals_against)[0];
                 // if (bestDefense) openTeamDetail(bestDefense);
               }}>
                 <div className="flex items-center justify-between">
@@ -850,7 +825,7 @@ export default function StandingsPage() {
               </div>
 
               <div className="rounded-lg bg-gradient-to-br from-rose-500/10 to-transparent border border-rose-500/20 p-4 backdrop-blur-sm group hover:border-rose-500/40 transition-all cursor-pointer" onClick={() => {
-                const bestGD = [...standings].sort((a, b) => b.goal_difference - a.goal_difference)[0];
+                // const bestGD = [...standings].sort((a, b) => b.goal_difference - a.goal_difference)[0];
                 // if (bestGD) openTeamDetail(bestGD);
               }}>
                 <div className="flex items-center justify-between">

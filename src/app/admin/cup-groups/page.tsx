@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import Image from 'next/image';
 import { getLeagues, getCupGroups, createCupGroup, assignTeamToGroup, getTeamsByLeague, randomizeTeamsToGroups, shuffleTeamsInGroups, clearAllGroupAssignments } from '@/lib/supabase';
 import { League, CupGroup, Team } from '@/types/supabase';
@@ -29,17 +29,7 @@ export default function CupGroupsPage() {
   const [shuffling, setShuffling] = useState(false);
   const [clearing, setClearing] = useState(false);
 
-  useEffect(() => {
-    loadLeagues();
-  }, []);
-
-  useEffect(() => {
-    if (selectedLeague) {
-      loadGroupsAndTeams();
-    }
-  }, [selectedLeague]);
-
-  const loadLeagues = async () => {
+  const loadLeagues = useCallback(async () => {
     try {
       const { data } = await getLeagues();
       if (data) {
@@ -53,12 +43,12 @@ export default function CupGroupsPage() {
           setSelectedLeague(cupLeagues[0].id);
         }
       }
-    } catch (err) {
+    } catch {
       setError('Failed to load leagues');
     }
-  };
+  }, []);
 
-  const loadGroupsAndTeams = async () => {
+  const loadGroupsAndTeams = useCallback(async () => {
     if (!selectedLeague) return;
 
     setLoading(true);
@@ -78,7 +68,17 @@ export default function CupGroupsPage() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [selectedLeague]);
+
+  useEffect(() => {
+    loadLeagues();
+  }, [loadLeagues]);
+
+  useEffect(() => {
+    if (selectedLeague) {
+      loadGroupsAndTeams();
+    }
+  }, [selectedLeague, loadGroupsAndTeams]);
 
   const handleCreateGroup = async (e: React.FormEvent) => {
     e.preventDefault();

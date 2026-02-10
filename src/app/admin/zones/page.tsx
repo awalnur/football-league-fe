@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { getLeagues, getLeagueZones, autoCreateLeagueZones } from '@/lib/supabase';
 import { League, LeagueZone } from '@/types/supabase';
 
@@ -13,17 +13,7 @@ export default function ZonesPage() {
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
 
-  useEffect(() => {
-    loadLeagues();
-  }, []);
-
-  useEffect(() => {
-    if (selectedLeague) {
-      loadZones();
-    }
-  }, [selectedLeague]);
-
-  const loadLeagues = async () => {
+  const loadLeagues = useCallback(async () => {
     try {
       const { data } = await getLeagues();
       if (data) {
@@ -34,12 +24,12 @@ export default function ZonesPage() {
           setSelectedLeague(leagueFormat[0].id);
         }
       }
-    } catch (err) {
+    } catch {
       setError('Failed to load leagues');
     }
-  };
+  }, []);
 
-  const loadZones = async () => {
+  const loadZones = useCallback(async () => {
     if (!selectedLeague) return;
 
     setLoading(true);
@@ -53,7 +43,17 @@ export default function ZonesPage() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [selectedLeague]);
+
+  useEffect(() => {
+    loadLeagues();
+  }, [loadLeagues]);
+
+  useEffect(() => {
+    if (selectedLeague) {
+      loadZones();
+    }
+  }, [selectedLeague, loadZones]);
 
   const handleGenerateZones = async () => {
     if (!selectedLeague) return;

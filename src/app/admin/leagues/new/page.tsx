@@ -57,7 +57,7 @@ export default function NewLeaguePage() {
 
       // Upload logo if provided
       if (logoFile && league) {
-        const { url, error: uploadError } = await uploadLeagueLogo(logoFile, league.id);
+        const { url } = await uploadLeagueLogo(logoFile, league.id);
         if (url) {
           // Update league with logo URL
           // This would need an update function, but for now we'll skip

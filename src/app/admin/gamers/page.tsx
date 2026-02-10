@@ -1,8 +1,9 @@
 'use client';
 
+/* eslint-disable react-hooks/set-state-in-effect */
 import Image from 'next/image';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
 import { getLeagues, getTeamsByLeague, getGamePlayersByTeam, supabase } from '@/lib/supabase';
@@ -43,7 +44,7 @@ export default function GamersPage() {
   const [loading, setLoading] = useState(true);
   const [deleting, setDeleting] = useState<string | null>(null);
 
-  async function loadLeagues() {
+  const loadLeagues = useCallback(async () => {
     const { data } = await getLeagues();
     if (data) {
       // Only eFootball leagues
@@ -55,9 +56,9 @@ export default function GamersPage() {
       }
     }
     setLoading(false);
-  }
+  }, []);
 
-  async function loadTeams(leagueId: string) {
+  const loadTeams = useCallback(async (leagueId: string) => {
     const { data } = await getTeamsByLeague(leagueId);
     if (data) {
       setTeams(data as Team[]);
@@ -65,20 +66,20 @@ export default function GamersPage() {
         setSelectedTeam(teamParam);
       }
     }
-  }
+  }, [teamParam]);
 
-  async function loadGamers(teamId: string) {
+  const loadGamers = useCallback(async (teamId: string) => {
     setLoading(true);
     const { data } = await getGamePlayersByTeam(teamId);
     if (data) {
       setGamers(data as GamePlayer[]);
     }
     setLoading(false);
-  }
+  }, []);
 
   useEffect(() => {
     loadLeagues();
-  }, []);
+  }, [loadLeagues]);
 
   useEffect(() => {
     if (selectedLeague) {
@@ -87,7 +88,7 @@ export default function GamersPage() {
       setTeams([]);
       setSelectedTeam('');
     }
-  }, [selectedLeague]);
+  }, [selectedLeague, loadTeams]);
 
   useEffect(() => {
     if (selectedTeam) {
@@ -95,7 +96,7 @@ export default function GamersPage() {
     } else {
       setGamers([]);
     }
-  }, [selectedTeam]);
+  }, [selectedTeam, loadGamers]);
 
   async function handleDelete(id: string, name: string) {
     if (!confirm(`Yakin ingin menghapus gamer "${name}"?`)) return;

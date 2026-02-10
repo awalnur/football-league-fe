@@ -9,7 +9,7 @@ interface CupGroupStandingsProps {
   leagueType: 'football' | 'efootball';
 }
 
-export default function CupGroupStandings({ groups, leagueType }: CupGroupStandingsProps) {
+export default function CupGroupStandings({ groups }: CupGroupStandingsProps) {
 
   const getPositionBadge = (position: number, isQualified: boolean) => {
     if (position === 1) {

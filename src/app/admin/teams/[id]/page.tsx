@@ -2,7 +2,7 @@
 
 import Image from 'next/image';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import Link from 'next/link';
 import { getLeagues, supabase, uploadTeamLogo } from '@/lib/supabase';
@@ -11,16 +11,6 @@ interface League {
   id: string;
   name: string;
   type: string;
-}
-
-interface Team {
-  id: string;
-  name: string;
-  short_name: string | null;
-  logo_url: string | null;
-  primary_color: string | null;
-  secondary_color: string | null;
-  league_id: string;
 }
 
 export default function EditTeamPage() {
@@ -47,11 +37,7 @@ export default function EditTeamPage() {
 
   const [originalLogoUrl, setOriginalLogoUrl] = useState<string | null>(null);
 
-  useEffect(() => {
-    loadData();
-  }, [teamId]);
-
-  async function loadData() {
+  const loadData = useCallback(async () => {
     setLoading(true);
     try {
       // Load leagues
@@ -87,7 +73,11 @@ export default function EditTeamPage() {
     } finally {
       setLoading(false);
     }
-  }
+  }, [teamId]);
+
+  useEffect(() => {
+    loadData();
+  }, [loadData]);
 
   const handleLogoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
