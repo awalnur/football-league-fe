@@ -2,7 +2,7 @@
 
 import Image from 'next/image';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import {
@@ -17,7 +17,7 @@ import LoadingState from '@/components/LoadingState';
 import EmptyState from '@/components/EmptyState';
 import { League, StandingWithTeam, CupGroupWithStandings, LeagueZone } from '@/types/supabase';
 
-export default function EnhancedStandingsPage() {
+function EnhancedStandingsContent() {
   const searchParams = useSearchParams();
   const leagueId = searchParams.get('league') || '';
 
@@ -292,3 +292,12 @@ export default function EnhancedStandingsPage() {
     </div>
   );
 }
+
+export default function EnhancedStandingsPage() {
+  return (
+    <Suspense fallback={<LoadingState />}>
+      <EnhancedStandingsContent />
+    </Suspense>
+  );
+}
+

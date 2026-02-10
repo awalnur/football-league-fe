@@ -2,7 +2,7 @@
 
 import Image from 'next/image';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import {
@@ -18,7 +18,7 @@ import { League, CupGroupWithStandings, MatchWithTeams } from '@/types/supabase'
 
 type TabType = 'groups' | 'r16' | 'quarters' | 'semis' | 'final';
 
-export default function CupTournamentPage() {
+function CupTournamentContent() {
   const searchParams = useSearchParams();
   const leagueId = searchParams.get('league') || '';
 
@@ -287,3 +287,23 @@ export default function CupTournamentPage() {
     </div>
   );
 }
+
+export default function CupTournamentPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen flex flex-col bg-slate-900 text-white">
+        <Navigation />
+        <div className="flex-1 flex items-center justify-center">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-blue-500 mx-auto mb-4"></div>
+            <p className="text-slate-400">Loading tournament...</p>
+          </div>
+        </div>
+        <Footer />
+      </div>
+    }>
+      <CupTournamentContent />
+    </Suspense>
+  );
+}
+
