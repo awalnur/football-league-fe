@@ -1,8 +1,10 @@
 'use client';
 
+import Image from 'next/image';
+
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { getLeagues, getLeagueStandings, getTeamMatches, getGamePlayersByTeam } from '@/lib/supabase';
+import { getLeagues, getLeagueStandings } from '@/lib/supabase';
 
 // SVG Icon Components
 const Icons = {
@@ -102,6 +104,8 @@ interface League {
   season: string;
   logo_url: string | null;
   status: string;
+  tournament_format?: 'league' | 'cup' | 'league_cup';
+  has_group_stage?: boolean;
 }
 
 interface Standing {
@@ -118,31 +122,6 @@ interface Standing {
   goal_difference: number;
   points: number;
   form: string | null;
-}
-
-interface TeamMatch {
-  match_id: string;
-  match_date: string;
-  match_week: number;
-  home_team_id: string;
-  home_team_name: string;
-  home_team_logo: string | null;
-  away_team_id: string;
-  away_team_name: string;
-  away_team_logo: string | null;
-  home_score: number | null;
-  away_score: number | null;
-  status: string;
-  is_home: boolean;
-  result: string | null;
-}
-
-interface GamePlayer {
-  id: string;
-  real_name: string;
-  gamertag: string;
-  avatar_url: string | null;
-  is_captain: boolean;
 }
 
 export default function StandingsPage() {
@@ -415,7 +394,7 @@ export default function StandingsPage() {
               <div className="flex items-center gap-4">
                 <div className="w-14 h-14 rounded-lg bg-slate-900/80 border border-slate-700/50 flex items-center justify-center">
                   {currentLeague.logo_url ? (
-                    <img src={currentLeague.logo_url} alt="" className="w-10 h-10 object-contain" />
+                    <Image src={currentLeague.logo_url} alt="" className="w-10 h-10 object-contain"  width={40} height={40} />
                   ) : currentLeague.type === 'efootball' ? (
                     <span className="text-purple-400">{Icons.gamepad}</span>
                   ) : (
@@ -423,7 +402,15 @@ export default function StandingsPage() {
                   )}
                 </div>
                 <div>
-                  <h2 className="text-xl font-bold text-white">{currentLeague.name}</h2>
+                  <div className="flex items-center gap-2">
+                    <h2 className="text-xl font-bold text-white">{currentLeague.name}</h2>
+                    {(currentLeague.tournament_format === 'cup' || currentLeague.tournament_format === 'league_cup') && (
+                      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-xs font-bold bg-blue-500/20 text-blue-400 border border-blue-500/30">
+                        <span>🏅</span>
+                        Cup
+                      </span>
+                    )}
+                  </div>
                   <div className="flex items-center gap-3 mt-1">
                     <span className="text-sm text-slate-400">Musim {currentLeague.season}</span>
                     <span className="px-2 py-0.5 rounded text-xs font-bold shadow bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">
@@ -433,6 +420,16 @@ export default function StandingsPage() {
                 </div>
               </div>
               <div className="flex items-center gap-4">
+                {/* Show Cup Tournament Button if it's a cup format */}
+                {(currentLeague.tournament_format === 'cup' || currentLeague.tournament_format === 'league_cup') && (
+                  <Link
+                    href={`/league/${currentLeague.id}`}
+                    className="flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors font-medium text-sm shadow-lg shadow-blue-500/25"
+                  >
+                    <span>🎯</span>
+                    <span>Lihat Tournament</span>
+                  </Link>
+                )}
                 <div className="text-center">
                   <p className="text-2xl font-bold text-white">{standings.length}</p>
                   <p className="text-xs text-slate-500">Tim</p>
@@ -453,6 +450,61 @@ export default function StandingsPage() {
             <div className="h-1 bg-slate-900/50">
               <div className="h-full bg-gradient-to-r from-emerald-500 via-blue-500 to-purple-500" style={{ width: '60%' }}></div>
             </div>
+          </div>
+        )}
+
+        {/* Cup Tournament Quick Access */}
+        {currentLeague && (currentLeague.tournament_format === 'cup' || currentLeague.tournament_format === 'league_cup') && (
+          <div className="mb-6 grid grid-cols-1 md:grid-cols-2 gap-4">
+            {/* Group Stage Card */}
+            {currentLeague.has_group_stage && (
+              <Link
+                href={`/league/${currentLeague.id}`}
+                className="group relative overflow-hidden rounded-lg bg-gradient-to-br from-blue-600/20 to-blue-800/10 border border-blue-500/30 hover:border-blue-400/50 p-6 transition-all hover:shadow-lg hover:shadow-blue-500/20"
+              >
+                <div className="flex items-start justify-between mb-4">
+                  <div className="flex items-center gap-3">
+                    <div className="w-12 h-12 rounded-lg bg-blue-600/30 border border-blue-500/50 flex items-center justify-center text-2xl group-hover:scale-110 transition-transform">
+                      🎯
+                    </div>
+                    <div>
+                      <h3 className="text-lg font-bold text-white">Group Stage</h3>
+                      <p className="text-sm text-blue-300">Lihat standings per group</p>
+                    </div>
+                  </div>
+                  <svg className="w-5 h-5 text-blue-400 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
+                  </svg>
+                </div>
+                <div className="text-sm text-slate-300 opacity-80">
+                  View grup A, B, C, D dan qualified teams
+                </div>
+              </Link>
+            )}
+
+            {/* Knockout Bracket Card */}
+            <Link
+              href={`/league/${currentLeague.id}`}
+              className="group relative overflow-hidden rounded-lg bg-gradient-to-br from-purple-600/20 to-purple-800/10 border border-purple-500/30 hover:border-purple-400/50 p-6 transition-all hover:shadow-lg hover:shadow-purple-500/20"
+            >
+              <div className="flex items-start justify-between mb-4">
+                <div className="flex items-center gap-3">
+                  <div className="w-12 h-12 rounded-lg bg-purple-600/30 border border-purple-500/50 flex items-center justify-center text-2xl group-hover:scale-110 transition-transform">
+                    🏆
+                  </div>
+                  <div>
+                    <h3 className="text-lg font-bold text-white">Knockout Bracket</h3>
+                    <p className="text-sm text-purple-300">Lihat bagan pertandingan</p>
+                  </div>
+                </div>
+                <svg className="w-5 h-5 text-purple-400 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
+                </svg>
+              </div>
+              <div className="text-sm text-slate-300 opacity-80">
+                View R16, QF, SF, dan Final matches
+              </div>
+            </Link>
           </div>
         )}
 
@@ -493,7 +545,7 @@ export default function StandingsPage() {
                     </div>
                     <div className="w-12 h-12 rounded-lg bg-slate-800/80 flex items-center justify-center border border-slate-600/30 group-hover:border-slate-400/50 transition-colors">
                       {standings[1].team_logo ? (
-                        <img src={standings[1].team_logo} alt="" className="w-9 h-9 object-contain" />
+                        <Image src={standings[1].team_logo} alt="" className="w-9 h-9 object-contain"  width={36} height={36} />
                       ) : <span className="text-slate-500">{Icons.shield}</span>}
                     </div>
                   </div>
@@ -522,7 +574,7 @@ export default function StandingsPage() {
                     </div>
                     <div className="w-14 h-14 rounded-lg bg-slate-800/80 flex items-center justify-center border border-amber-500/30 group-hover:border-amber-400/50 transition-colors">
                       {standings[0].team_logo ? (
-                        <img src={standings[0].team_logo} alt="" className="w-11 h-11 object-contain" />
+                        <Image src={standings[0].team_logo} alt="" className="w-11 h-11 object-contain"  width={44} height={44} />
                       ) : <span className="text-amber-500">{Icons.shield}</span>}
                     </div>
                   </div>
@@ -548,7 +600,7 @@ export default function StandingsPage() {
                     </div>
                     <div className="w-12 h-12 rounded-lg bg-slate-800/80 flex items-center justify-center border border-orange-500/20 group-hover:border-orange-400/50 transition-colors">
                       {standings[2].team_logo ? (
-                        <img src={standings[2].team_logo} alt="" className="w-9 h-9 object-contain" />
+                        <Image src={standings[2].team_logo} alt="" className="w-9 h-9 object-contain"  width={36} height={36} />
                       ) : <span className="text-orange-500">{Icons.shield}</span>}
                     </div>
                   </div>
@@ -626,7 +678,7 @@ export default function StandingsPage() {
                             <div className="flex items-center gap-3">
                               <div className="h-9 w-9 rounded bg-slate-700/60 flex items-center justify-center group-hover:ring-2 group-hover:ring-emerald-500/40 transition-all border border-slate-600/30">
                                 {team.team_logo ? (
-                                  <img src={team.team_logo} alt="" className="h-7 w-7 object-contain" />
+                                  <Image src={team.team_logo} alt="" className="h-7 w-7 object-contain"  width={28} height={28} />
                                 ) : (
                                   <span className="text-slate-500">{Icons.shield}</span>
                                 )}
@@ -734,10 +786,7 @@ export default function StandingsPage() {
                 </div>
               </div>
 
-              <div className="rounded-lg bg-gradient-to-br from-emerald-500/10 to-transparent border border-emerald-500/20 p-4 backdrop-blur-sm group hover:border-emerald-500/40 transition-all cursor-pointer" onClick={() => {
-                const topScorer = [...standings].sort((a, b) => b.goals_for - a.goals_for)[0];
-                // if (topScorer) openTeamDetail(topScorer);
-              }}>
+              <div className="rounded-lg bg-gradient-to-br from-emerald-500/10 to-transparent border border-emerald-500/20 p-4 backdrop-blur-sm group hover:border-emerald-500/40 transition-all cursor-pointer">
                 <div className="flex items-center justify-between">
                   <div className="flex-1 min-w-0">
                     <p className="text-xs font-medium text-emerald-400/80">Gol Terbanyak</p>
@@ -753,10 +802,7 @@ export default function StandingsPage() {
                 </div>
               </div>
 
-              <div className="rounded-lg bg-gradient-to-br from-blue-500/10 to-transparent border border-blue-500/20 p-4 backdrop-blur-sm group hover:border-blue-500/40 transition-all cursor-pointer" onClick={() => {
-                const bestDefense = [...standings].sort((a, b) => a.goals_against - b.goals_against)[0];
-                // if (bestDefense) openTeamDetail(bestDefense);
-              }}>
+              <div className="rounded-lg bg-gradient-to-br from-blue-500/10 to-transparent border border-blue-500/20 p-4 backdrop-blur-sm group hover:border-blue-500/40 transition-all cursor-pointer">
                 <div className="flex items-center justify-between">
                   <div className="flex-1 min-w-0">
                     <p className="text-xs font-medium text-blue-400/80">Pertahanan Terbaik</p>
@@ -772,10 +818,7 @@ export default function StandingsPage() {
                 </div>
               </div>
 
-              <div className="rounded-lg bg-gradient-to-br from-rose-500/10 to-transparent border border-rose-500/20 p-4 backdrop-blur-sm group hover:border-rose-500/40 transition-all cursor-pointer" onClick={() => {
-                const bestGD = [...standings].sort((a, b) => b.goal_difference - a.goal_difference)[0];
-                // if (bestGD) openTeamDetail(bestGD);
-              }}>
+              <div className="rounded-lg bg-gradient-to-br from-rose-500/10 to-transparent border border-rose-500/20 p-4 backdrop-blur-sm group hover:border-rose-500/40 transition-all cursor-pointer">
                 <div className="flex items-center justify-between">
                   <div className="flex-1 min-w-0">
                     <p className="text-xs font-medium text-rose-400/80">Selisih Gol Terbaik</p>
@@ -813,7 +856,7 @@ export default function StandingsPage() {
                       </div>
                       <div className="w-6 h-6 rounded bg-slate-700/50 flex items-center justify-center shrink-0">
                         {team.team_logo ? (
-                          <img src={team.team_logo} alt="" className="w-5 h-5 object-contain" />
+                          <Image src={team.team_logo} alt="" className="w-5 h-5 object-contain"  width={20} height={20} />
                         ) : (
                           <span className="text-slate-500 text-xs">{Icons.shield}</span>
                         )}

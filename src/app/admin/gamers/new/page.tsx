@@ -1,6 +1,8 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import Image from 'next/image';
+
+import { useState, useEffect, useCallback } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { getLeagues, getTeamsByLeague, createGamePlayer, uploadGamerAvatar } from '@/lib/supabase';
@@ -39,17 +41,7 @@ export default function NewGamerPage() {
     is_captain: false,
   });
 
-  useEffect(() => {
-    loadLeagues();
-  }, []);
-
-  useEffect(() => {
-    if (selectedLeague) {
-      loadTeams(selectedLeague);
-    }
-  }, [selectedLeague]);
-
-  async function loadLeagues() {
+  const loadLeagues = useCallback(async () => {
     const { data } = await getLeagues();
     if (data) {
       const efootballLeagues = data.filter((l: League) => l.type === 'efootball');
@@ -58,9 +50,9 @@ export default function NewGamerPage() {
         setSelectedLeague(efootballLeagues[0].id);
       }
     }
-  }
+  }, []);
 
-  async function loadTeams(leagueId: string) {
+  const loadTeams = useCallback(async (leagueId: string) => {
     const { data } = await getTeamsByLeague(leagueId);
     if (data) {
       setTeams(data as Team[]);
@@ -68,7 +60,17 @@ export default function NewGamerPage() {
         setFormData(prev => ({ ...prev, team_id: teamParam }));
       }
     }
-  }
+  }, [teamParam]);
+
+  useEffect(() => {
+    loadLeagues();
+  }, [loadLeagues]);
+
+  useEffect(() => {
+    if (selectedLeague) {
+      loadTeams(selectedLeague);
+    }
+  }, [selectedLeague, loadTeams]);
 
   const handleAvatarChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -179,7 +181,7 @@ export default function NewGamerPage() {
           <div className="flex items-center gap-4">
             <div className="w-24 h-24 rounded-full bg-gray-700 flex items-center justify-center overflow-hidden">
               {avatarPreview ? (
-                <img src={avatarPreview} alt="Preview" className="w-full h-full object-cover" />
+                <Image src={avatarPreview} alt="Preview" className="w-full h-full object-cover"  width={96} height={96} />
               ) : (
                 <span className="text-4xl">👤</span>
               )}

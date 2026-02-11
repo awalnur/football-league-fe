@@ -5,7 +5,14 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { isCurrentUserAdmin, getCurrentUser, signOut } from '@/lib/supabase';
 
-const navigation = [
+interface NavigationItem {
+  name: string;
+  href: string;
+  icon: React.ReactNode;
+  badge?: string;
+}
+
+const navigation: NavigationItem[] = [
   {
     name: 'Dashboard',
     href: '/admin',
@@ -25,6 +32,16 @@ const navigation = [
     )
   },
   {
+    name: 'Hierarchy',
+    href: '/admin/hierarchy',
+    icon: (
+      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
+        <path strokeLinecap="round" strokeLinejoin="round" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z" />
+      </svg>
+    ),
+    badge: 'NEW'
+  },
+  {
     name: 'Tim',
     href: '/admin/teams',
     icon: (
@@ -41,6 +58,36 @@ const navigation = [
         <path strokeLinecap="round" strokeLinejoin="round" d="M15 5v2m0 4v2m0 4v2M5 5a2 2 0 00-2 2v3a2 2 0 110 4v3a2 2 0 002 2h14a2 2 0 002-2v-3a2 2 0 110-4V7a2 2 0 00-2-2H5z" />
       </svg>
     )
+  },
+  {
+    name: 'Liga Zones',
+    href: '/admin/zones',
+    icon: (
+      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
+        <path strokeLinecap="round" strokeLinejoin="round" d="M7 11.5V14m0-2.5v-6a1.5 1.5 0 113 0m-3 6a1.5 1.5 0 00-3 0v2a7.5 7.5 0 0015 0v-5a1.5 1.5 0 00-3 0m-6-3V11m0-5.5v-1a1.5 1.5 0 013 0v1m0 0V11m0-5.5a1.5 1.5 0 013 0v3m0 0V11" />
+      </svg>
+    ),
+    badge: 'NEW'
+  },
+  {
+    name: 'Cup Groups',
+    href: '/admin/cup-groups',
+    icon: (
+      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
+        <path strokeLinecap="round" strokeLinejoin="round" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
+      </svg>
+    ),
+    badge: 'NEW'
+  },
+  {
+    name: 'Team Movements',
+    href: '/admin/movements',
+    icon: (
+      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
+        <path strokeLinecap="round" strokeLinejoin="round" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4" />
+      </svg>
+    ),
+    badge: 'NEW'
   },
   {
     name: 'Jadwal',
@@ -177,14 +224,19 @@ export default function AdminLayout({
                   href={item.href}
                   onClick={() => setSidebarOpen(false)}
                   className={`
-                    flex items-center gap-3 px-4 py-2.5 rounded-lg transition-colors
+                    flex items-center gap-3 px-4 py-2.5 rounded-lg transition-colors relative
                     ${isActive 
                       ? 'bg-emerald-600 text-white' 
                       : 'text-slate-400 hover:bg-slate-800 hover:text-white'}
                   `}
                 >
                   {item.icon}
-                  <span className="font-medium">{item.name}</span>
+                  <span className="font-medium flex-1">{item.name}</span>
+                  {item.badge && (
+                    <span className="bg-yellow-500 text-yellow-900 text-[10px] font-bold px-1.5 py-0.5 rounded">
+                      {item.badge}
+                    </span>
+                  )}
                 </Link>
               );
             })}

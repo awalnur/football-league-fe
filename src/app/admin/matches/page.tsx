@@ -1,6 +1,8 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import Image from 'next/image';
+
+import { useState, useEffect, useCallback } from 'react';
 import Link from 'next/link';
 import { getLeagues, getMatchesByLeague } from '@/lib/supabase';
 
@@ -29,20 +31,7 @@ export default function MatchesPage() {
   const [filter, setFilter] = useState<'all' | 'scheduled' | 'completed'>('all');
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    loadLeagues();
-  }, []);
-
-  useEffect(() => {
-    if (selectedLeague) {
-      loadMatches(selectedLeague);
-    } else {
-      setMatches([]);
-      setLoading(false);
-    }
-  }, [selectedLeague]);
-
-  async function loadLeagues() {
+  const loadLeagues = useCallback(async () => {
     const { data } = await getLeagues();
     if (data) {
       setLeagues(data as League[]);
@@ -51,16 +40,31 @@ export default function MatchesPage() {
       }
     }
     setLoading(false);
-  }
+  }, []);
 
-  async function loadMatches(leagueId: string) {
+  const loadMatches = useCallback(async (leagueId: string) => {
     setLoading(true);
     const { data } = await getMatchesByLeague(leagueId);
     if (data) {
       setMatches(data as unknown as Match[]);
     }
     setLoading(false);
-  }
+  }, []);
+
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    loadLeagues();
+  }, [loadLeagues]);
+
+  useEffect(() => {
+    if (selectedLeague) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
+      loadMatches(selectedLeague);
+    } else {
+      setMatches([]);
+      setLoading(false);
+    }
+  }, [selectedLeague, loadMatches]);
 
   const currentLeague = leagues.find(l => l.id === selectedLeague);
 
@@ -212,7 +216,7 @@ export default function MatchesPage() {
                       <span className="text-white font-semibold text-right">{match.home_team?.name}</span>
                       <div className="w-10 h-10 rounded-lg bg-gray-700 flex items-center justify-center">
                         {match.home_team?.logo_url ? (
-                          <img src={match.home_team.logo_url} alt="" className="w-7 h-7 object-contain" />
+                          <Image src={match.home_team.logo_url} alt="" className="w-7 h-7 object-contain"  width={28} height={28} />
                         ) : '🏠'}
                       </div>
                     </div>
@@ -236,7 +240,7 @@ export default function MatchesPage() {
                     <div className="flex items-center gap-3 flex-1">
                       <div className="w-10 h-10 rounded-lg bg-gray-700 flex items-center justify-center">
                         {match.away_team?.logo_url ? (
-                          <img src={match.away_team.logo_url} alt="" className="w-7 h-7 object-contain" />
+                          <Image src={match.away_team.logo_url} alt="" className="w-7 h-7 object-contain"  width={28} height={28} />
                         ) : '✈️'}
                       </div>
                       <span className="text-white font-semibold">{match.away_team?.name}</span>

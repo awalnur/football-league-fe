@@ -5,7 +5,13 @@ const nextConfig: NextConfig = {
   reactCompiler: true,
   images: {
     dangerouslyAllowSVG: true,
-    remotePatterns: [],
+    remotePatterns: [
+      {
+        protocol: 'https',
+        hostname: 'upload.wikimedia.org',
+        pathname: '/wikipedia/**',
+      },
+    ],
   },
 };
 
