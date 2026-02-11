@@ -101,6 +101,521 @@ export async function generateSchedule(leagueId: string, startDate?: string, int
   return { data, error };
 }
 
+// Generate schedule for different competition formats
+export async function generateScheduleAdvanced(
+  leagueId: string,
+  format: 'round_robin' | 'single_round' | 'knockout' | 'group_knockout',
+  options: {
+    startDate?: string;
+    intervalDays?: number;
+    matchesPerDay?: number;
+    groupCount?: number;
+    teamsPerGroup?: number;
+    qualifiersPerGroup?: number;
+  }
+) {
+  const {
+    startDate,
+    intervalDays = 7,
+    matchesPerDay = 2,
+    groupCount = 4,
+    teamsPerGroup = 4,
+    qualifiersPerGroup = 2
+  } = options;
+
+  // Get teams for this league
+  const { data: teams, error: teamsError } = await getTeamsByLeague(leagueId);
+  if (teamsError || !teams || teams.length < 2) {
+    return { data: null, error: teamsError || new Error('Not enough teams') };
+  }
+
+  // Shuffle teams randomly
+  const shuffledTeams = [...teams].sort(() => Math.random() - 0.5);
+
+  try {
+    switch (format) {
+      case 'round_robin':
+        return await generateRoundRobinSchedule(leagueId, shuffledTeams, startDate, intervalDays, matchesPerDay, true);
+
+      case 'single_round':
+        return await generateRoundRobinSchedule(leagueId, shuffledTeams, startDate, intervalDays, matchesPerDay, false);
+
+      case 'knockout':
+        return await generateKnockoutSchedule(leagueId, shuffledTeams, startDate, intervalDays);
+
+      case 'group_knockout':
+        return await generateGroupKnockoutSchedule(
+          leagueId,
+          shuffledTeams,
+          startDate,
+          intervalDays,
+          matchesPerDay,
+          groupCount,
+          teamsPerGroup,
+          qualifiersPerGroup
+        );
+
+      default:
+        return { data: null, error: new Error('Invalid format') };
+    }
+  } catch (err) {
+    return { data: null, error: err as Error };
+  }
+}
+
+// Helper: Generate Round Robin schedule (home & away or single)
+async function generateRoundRobinSchedule(
+  leagueId: string,
+  teams: { id: string; name: string }[],
+  startDate?: string,
+  intervalDays: number = 7,
+  matchesPerDay: number = 2,
+  homeAndAway: boolean = true
+) {
+  const n = teams.length;
+  const matches: {
+    league_id: string;
+    home_team_id: string;
+    away_team_id: string;
+    match_date: string;
+    match_week: number;
+    status: string;
+  }[] = [];
+
+  // Round robin algorithm
+  const teamIds = teams.map(t => t.id);
+  const rounds: { home: string; away: string }[][] = [];
+
+  // Generate first half (each team plays each other once)
+  for (let round = 0; round < n - 1; round++) {
+    const roundMatches: { home: string; away: string }[] = [];
+    for (let i = 0; i < n / 2; i++) {
+      const home = (round + i) % (n - 1);
+      let away = (n - 1 - i + round) % (n - 1);
+      if (i === 0) away = n - 1;
+
+      roundMatches.push({
+        home: teamIds[home],
+        away: teamIds[away]
+      });
+    }
+    rounds.push(roundMatches);
+  }
+
+  // Add reverse fixtures if home & away
+  if (homeAndAway) {
+    const reverseRounds = rounds.map(round =>
+      round.map(match => ({ home: match.away, away: match.home }))
+    );
+    rounds.push(...reverseRounds);
+  }
+
+  // Create match records with dates
+  const baseDate = startDate ? new Date(startDate) : new Date();
+  baseDate.setHours(19, 0, 0, 0); // Start at 19:00 WIB
+
+  let currentDate = new Date(baseDate);
+  let matchWeek = 1;
+  let matchesOnCurrentDay = 0;
+
+  rounds.forEach((round, roundIndex) => {
+    round.forEach((match) => {
+      matches.push({
+        league_id: leagueId,
+        home_team_id: match.home,
+        away_team_id: match.away,
+        match_date: currentDate.toISOString(),
+        match_week: matchWeek,
+        status: 'scheduled'
+      });
+
+      matchesOnCurrentDay++;
+
+      // Move to next time slot or next day
+      if (matchesOnCurrentDay >= matchesPerDay) {
+        matchesOnCurrentDay = 0;
+        currentDate = new Date(currentDate);
+        currentDate.setDate(currentDate.getDate() + intervalDays);
+        currentDate.setHours(19, 0, 0, 0);
+      } else {
+        currentDate = new Date(currentDate);
+        currentDate.setHours(currentDate.getHours() + 1);
+      }
+    });
+
+    matchWeek++;
+  });
+
+  // Delete existing scheduled matches
+  await supabase
+    .from('matches')
+    .delete()
+    .eq('league_id', leagueId)
+    .eq('status', 'scheduled');
+
+  // Insert new matches
+  const { data, error } = await supabase
+    .from('matches')
+    .insert(matches)
+    .select();
+
+  // Update league status
+  await supabase
+    .from('leagues')
+    .update({ status: 'ongoing' })
+    .eq('id', leagueId);
+
+  return { data: data?.length || 0, error };
+}
+
+// Helper: Generate Knockout schedule
+async function generateKnockoutSchedule(
+  leagueId: string,
+  teams: { id: string; name: string }[],
+  startDate?: string,
+  intervalDays: number = 7
+) {
+  const n = teams.length;
+  const matches: {
+    league_id: string;
+    home_team_id: string;
+    away_team_id: string;
+    match_date: string;
+    cup_stage: string;
+    status: string;
+  }[] = [];
+
+  // Determine stages based on team count
+  const getStage = (teamsInRound: number): string => {
+    switch (teamsInRound) {
+      case 32: return 'round_of_32';
+      case 16: return 'round_of_16';
+      case 8: return 'quarter_final';
+      case 4: return 'semi_final';
+      case 2: return 'final';
+      default: return 'round_of_' + teamsInRound;
+    }
+  };
+
+  const baseDate = startDate ? new Date(startDate) : new Date();
+  baseDate.setHours(19, 0, 0, 0);
+  let roundDate = new Date(baseDate);
+
+  // Generate bracket - all matches in same round on same day
+  let currentRoundTeams = teams.map(t => t.id);
+
+  while (currentRoundTeams.length >= 2) {
+    const stage = getStage(currentRoundTeams.length);
+    const matchesInRound = currentRoundTeams.length / 2;
+
+    for (let i = 0; i < currentRoundTeams.length; i += 2) {
+      const matchIndex = i / 2;
+      const matchTime = new Date(roundDate);
+      // Stagger times: 19:00, 19:30, 20:00, 20:30, etc.
+      matchTime.setHours(19 + Math.floor(matchIndex / 2), (matchIndex % 2) * 30, 0, 0);
+
+      matches.push({
+        league_id: leagueId,
+        home_team_id: currentRoundTeams[i],
+        away_team_id: currentRoundTeams[i + 1],
+        match_date: matchTime.toISOString(),
+        cup_stage: stage,
+        status: 'scheduled'
+      });
+    }
+
+    // Move to next round date (different day)
+    roundDate = new Date(roundDate);
+    roundDate.setDate(roundDate.getDate() + intervalDays);
+    roundDate.setHours(19, 0, 0, 0);
+
+    // For next round, we'll have half the teams (placeholders)
+    currentRoundTeams = currentRoundTeams.filter((_, i) => i % 2 === 0);
+  }
+
+  // Delete existing scheduled matches
+  await supabase
+    .from('matches')
+    .delete()
+    .eq('league_id', leagueId)
+    .eq('status', 'scheduled');
+
+  // Insert new matches
+  const { data, error } = await supabase
+    .from('matches')
+    .insert(matches)
+    .select();
+
+  // Update league
+  await supabase
+    .from('leagues')
+    .update({
+      status: 'ongoing',
+      tournament_format: 'cup'
+    })
+    .eq('id', leagueId);
+
+  return { data: data?.length || 0, error };
+}
+
+// Helper: Generate Group + Knockout schedule
+async function generateGroupKnockoutSchedule(
+  leagueId: string,
+  teams: { id: string; name: string }[],
+  startDate?: string,
+  intervalDays: number = 7,
+  _matchesPerDay: number = 2, // Not used for cup - all matches same day
+  groupCount: number = 4,
+  teamsPerGroup: number = 4,
+  qualifiersPerGroup: number = 2
+) {
+  const totalGroupTeams = groupCount * teamsPerGroup;
+  if (teams.length < totalGroupTeams) {
+    return { data: null, error: new Error(`Need at least ${totalGroupTeams} teams`) };
+  }
+
+  // Use only the required number of teams
+  const selectedTeams = teams.slice(0, totalGroupTeams);
+
+  // Create groups
+  const groups: { id: string; name: string; teams: { id: string; name: string }[] }[] = [];
+  const groupNames = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H'];
+
+  // Delete existing groups for this league
+  await supabase
+    .from('cup_groups')
+    .delete()
+    .eq('league_id', leagueId);
+
+  // Create new groups
+  for (let i = 0; i < groupCount; i++) {
+    const groupTeams = selectedTeams.slice(i * teamsPerGroup, (i + 1) * teamsPerGroup);
+
+    // Insert group
+    const { data: groupData, error: groupError } = await supabase
+      .from('cup_groups')
+      .insert({
+        league_id: leagueId,
+        group_name: groupNames[i],
+        qualifiers_count: qualifiersPerGroup
+      })
+      .select()
+      .single();
+
+    if (groupError || !groupData) {
+      return { data: null, error: groupError };
+    }
+
+    // Update teams with group assignment
+    for (const team of groupTeams) {
+      await supabase
+        .from('teams')
+        .update({ cup_group_id: groupData.id })
+        .eq('id', team.id);
+    }
+
+    // Create cup standings for each team
+    for (let pos = 0; pos < groupTeams.length; pos++) {
+      await supabase
+        .from('cup_standings')
+        .insert({
+          cup_group_id: groupData.id,
+          team_id: groupTeams[pos].id,
+          position: pos + 1,
+          played: 0,
+          won: 0,
+          drawn: 0,
+          lost: 0,
+          goals_for: 0,
+          goals_against: 0,
+          goal_difference: 0,
+          points: 0,
+          qualified: false
+        });
+    }
+
+    groups.push({
+      id: groupData.id,
+      name: groupNames[i],
+      teams: groupTeams
+    });
+  }
+
+  // Generate group stage matches - ALL MATCHES ON SAME DAY PER MATCHWEEK
+  // Using round-robin algorithm for each group
+  const allGroupMatches: {
+    league_id: string;
+    home_team_id: string;
+    away_team_id: string;
+    match_week: number;
+    cup_stage: string;
+    cup_group_id: string;
+    status: string;
+  }[][] = []; // Array of matchweeks, each containing all matches for that week
+
+  // Calculate number of matchweeks needed (n-1 for n teams in round robin)
+  const matchweeksNeeded = teamsPerGroup - 1;
+
+  // Initialize matchweeks array
+  for (let i = 0; i < matchweeksNeeded; i++) {
+    allGroupMatches[i] = [];
+  }
+
+  // Generate round-robin matches for each group
+  for (const group of groups) {
+    const groupTeamIds = group.teams.map(t => t.id);
+    const n = groupTeamIds.length;
+
+    // Round robin algorithm
+    for (let round = 0; round < n - 1; round++) {
+      for (let i = 0; i < n / 2; i++) {
+        const home = (round + i) % (n - 1);
+        let away = (n - 1 - i + round) % (n - 1);
+        if (i === 0) away = n - 1;
+
+        // Alternate home/away each round
+        const isHomeFirst = round % 2 === 0;
+
+        allGroupMatches[round].push({
+          league_id: leagueId,
+          home_team_id: isHomeFirst ? groupTeamIds[home] : groupTeamIds[away],
+          away_team_id: isHomeFirst ? groupTeamIds[away] : groupTeamIds[home],
+          match_week: round + 1,
+          cup_stage: 'group_stage',
+          cup_group_id: group.id,
+          status: 'scheduled'
+        });
+      }
+    }
+  }
+
+  // Assign dates - all matches in same matchweek on same day
+  const matches: {
+    league_id: string;
+    home_team_id: string;
+    away_team_id: string;
+    match_date: string;
+    match_week: number;
+    cup_stage: string;
+    cup_group_id: string;
+    status: string;
+  }[] = [];
+
+  const baseDate = startDate ? new Date(startDate) : new Date();
+  baseDate.setHours(19, 0, 0, 0); // Start at 19:00 WIB
+
+  for (let week = 0; week < allGroupMatches.length; week++) {
+    const matchweekDate = new Date(baseDate);
+    matchweekDate.setDate(matchweekDate.getDate() + (week * intervalDays));
+
+    // All matches in this week start at same base time, staggered by 1 hour
+    allGroupMatches[week].forEach((match, idx) => {
+      const matchTime = new Date(matchweekDate);
+      matchTime.setHours(19 + Math.floor(idx / 2), (idx % 2) * 30, 0, 0); // 19:00, 19:30, 20:00, 20:30, etc.
+
+      matches.push({
+        ...match,
+        match_date: matchTime.toISOString()
+      });
+    });
+  }
+
+  // Add placeholder knockout matches
+  const qualifiedTeamsCount = groupCount * qualifiersPerGroup;
+  const knockoutStages: { stage: string; matchCount: number }[] = [];
+
+  let teamsInStage = qualifiedTeamsCount;
+  while (teamsInStage >= 2) {
+    const stageName =
+      teamsInStage === 2 ? 'final' :
+      teamsInStage === 4 ? 'semi_final' :
+      teamsInStage === 8 ? 'quarter_final' :
+      teamsInStage === 16 ? 'round_of_16' :
+      `round_of_${teamsInStage}`;
+
+    knockoutStages.push({
+      stage: stageName,
+      matchCount: teamsInStage / 2
+    });
+
+    teamsInStage = teamsInStage / 2;
+  }
+
+  // Add third place match if semi finals exist
+  if (knockoutStages.some(s => s.stage === 'semi_final')) {
+    knockoutStages.push({
+      stage: 'third_place',
+      matchCount: 1
+    });
+  }
+
+  // Calculate knockout start date (after group stage)
+  const lastGroupMatchweek = matchweeksNeeded;
+  let knockoutDate = new Date(baseDate);
+  knockoutDate.setDate(knockoutDate.getDate() + (lastGroupMatchweek * intervalDays) + intervalDays); // Gap after group stage
+  knockoutDate.setHours(19, 0, 0, 0);
+
+  // Create knockout matches - all matches in same stage on same day
+  for (const stageInfo of knockoutStages) {
+    for (let i = 0; i < stageInfo.matchCount; i++) {
+      const matchTime = new Date(knockoutDate);
+      matchTime.setHours(19 + Math.floor(i / 2), (i % 2) * 30, 0, 0); // Stagger times
+
+      // Use placeholder - teams will be assigned after group stage
+      matches.push({
+        league_id: leagueId,
+        home_team_id: selectedTeams[0].id, // Placeholder
+        away_team_id: selectedTeams[1].id, // Placeholder
+        match_date: matchTime.toISOString(),
+        match_week: 0,
+        cup_stage: stageInfo.stage,
+        cup_group_id: '',
+        status: 'scheduled'
+      });
+    }
+
+    // Next stage on different day
+    knockoutDate = new Date(knockoutDate);
+    knockoutDate.setDate(knockoutDate.getDate() + intervalDays);
+    knockoutDate.setHours(19, 0, 0, 0);
+  }
+
+  // Delete existing matches
+  await supabase
+    .from('matches')
+    .delete()
+    .eq('league_id', leagueId)
+    .eq('status', 'scheduled');
+
+  // Insert group stage matches only (knockout will be generated later)
+  const groupMatches = matches.filter(m => m.cup_stage === 'group_stage');
+  const { data, error } = await supabase
+    .from('matches')
+    .insert(groupMatches)
+    .select();
+
+  // Update league
+  await supabase
+    .from('leagues')
+    .update({
+      status: 'ongoing',
+      tournament_format: 'cup',
+      has_group_stage: true,
+      teams_per_group: teamsPerGroup,
+      qualifiers_per_group: qualifiersPerGroup
+    })
+    .eq('id', leagueId);
+
+  return {
+    data: {
+      totalMatches: groupMatches.length,
+      groups: groups.length,
+      knockoutTeams: qualifiedTeamsCount
+    },
+    error
+  };
+}
+
 // ============================================
 // Team Functions
 // ============================================
@@ -683,3 +1198,205 @@ export async function getLeagueWithHierarchy(leagueId: string) {
   return { data: league, error };
 }
 
+// ============================================
+// Generate Knockout from Group Results
+// ============================================
+
+export async function generateKnockoutFromGroups(leagueId: string, startDate?: string, intervalDays: number = 7) {
+  // Get league info
+  const { data: league, error: leagueError } = await getLeagueById(leagueId);
+  if (leagueError || !league) {
+    return { data: null, error: leagueError || new Error('League not found') };
+  }
+
+  // Get all groups with standings
+  const { data: groups, error: groupsError } = await getCupGroupsWithStandings(leagueId);
+  if (groupsError || !groups || groups.length === 0) {
+    return { data: null, error: groupsError || new Error('No groups found') };
+  }
+
+  const qualifiersPerGroup = league.qualifiers_per_group || 2;
+
+  // Get qualified teams from each group
+  const qualifiedTeams: { teamId: string; groupName: string; position: number }[] = [];
+
+  for (const group of groups) {
+    // Sort standings by points, goal difference, goals for
+    const sortedStandings = [...group.standings].sort((a, b) => {
+      if (b.points !== a.points) return b.points - a.points;
+      if (b.goal_difference !== a.goal_difference) return b.goal_difference - a.goal_difference;
+      return b.goals_for - a.goals_for;
+    });
+
+    // Take top N teams from each group
+    for (let i = 0; i < Math.min(qualifiersPerGroup, sortedStandings.length); i++) {
+      const standing = sortedStandings[i];
+      qualifiedTeams.push({
+        teamId: standing.team_id,
+        groupName: group.group_name,
+        position: i + 1
+      });
+
+      // Mark team as qualified in standings
+      await supabase
+        .from('cup_standings')
+        .update({ qualified: true })
+        .eq('id', standing.id);
+    }
+  }
+
+  if (qualifiedTeams.length < 2) {
+    return { data: null, error: new Error('Not enough qualified teams') };
+  }
+
+  // Create knockout bracket
+  // Standard bracket: 1A vs 2B, 1B vs 2A, 1C vs 2D, 1D vs 2C, etc.
+  const matches: {
+    league_id: string;
+    home_team_id: string;
+    away_team_id: string;
+    match_date: string;
+    cup_stage: string;
+    status: string;
+  }[] = [];
+
+  const baseDate = startDate ? new Date(startDate) : new Date();
+  baseDate.setHours(19, 0, 0, 0);
+  let currentDate = new Date(baseDate);
+
+  // Pair teams: 1st place of one group vs 2nd place of another
+  const groupNames = [...new Set(qualifiedTeams.map(t => t.groupName))].sort();
+  const firstPlaceTeams = qualifiedTeams.filter(t => t.position === 1);
+  const secondPlaceTeams = qualifiedTeams.filter(t => t.position === 2);
+
+  // Create pairings
+  const pairings: { home: string; away: string }[] = [];
+
+  // Standard World Cup style pairing
+  for (let i = 0; i < firstPlaceTeams.length; i++) {
+    // Pair with second place from different group
+    const pairIndex = (i + 1) % secondPlaceTeams.length;
+    pairings.push({
+      home: firstPlaceTeams[i].teamId,
+      away: secondPlaceTeams[pairIndex].teamId
+    });
+  }
+
+  // Determine initial stage based on number of qualified teams
+  const getInitialStage = (teamCount: number): string => {
+    if (teamCount <= 2) return 'final';
+    if (teamCount <= 4) return 'semi_final';
+    if (teamCount <= 8) return 'quarter_final';
+    if (teamCount <= 16) return 'round_of_16';
+    return 'round_of_32';
+  };
+
+  const initialStage = getInitialStage(qualifiedTeams.length);
+
+  // Create initial round matches
+  for (const pairing of pairings) {
+    matches.push({
+      league_id: leagueId,
+      home_team_id: pairing.home,
+      away_team_id: pairing.away,
+      match_date: currentDate.toISOString(),
+      cup_stage: initialStage,
+      status: 'scheduled'
+    });
+
+    currentDate = new Date(currentDate);
+    currentDate.setHours(currentDate.getHours() + 1);
+  }
+
+  // Generate subsequent rounds (with placeholders)
+  const stages = ['round_of_16', 'quarter_final', 'semi_final', 'final'];
+  const initialStageIndex = stages.indexOf(initialStage);
+
+  currentDate = new Date(currentDate);
+  currentDate.setDate(currentDate.getDate() + intervalDays);
+  currentDate.setHours(19, 0, 0, 0);
+
+  let teamsInNextRound = pairings.length;
+
+  for (let stageIndex = initialStageIndex + 1; stageIndex < stages.length; stageIndex++) {
+    teamsInNextRound = Math.floor(teamsInNextRound / 2);
+    if (teamsInNextRound < 1) break;
+
+    const stage = stages[stageIndex];
+
+    for (let i = 0; i < teamsInNextRound; i++) {
+      // Placeholder match - teams will be determined by previous round results
+      matches.push({
+        league_id: leagueId,
+        home_team_id: qualifiedTeams[0].teamId, // Placeholder
+        away_team_id: qualifiedTeams[1].teamId, // Placeholder
+        match_date: currentDate.toISOString(),
+        cup_stage: stage,
+        status: 'scheduled'
+      });
+
+      currentDate = new Date(currentDate);
+      currentDate.setHours(currentDate.getHours() + 1);
+    }
+
+    currentDate = new Date(currentDate);
+    currentDate.setDate(currentDate.getDate() + intervalDays);
+    currentDate.setHours(19, 0, 0, 0);
+  }
+
+  // Add third place match
+  if (stages.indexOf(initialStage) <= stages.indexOf('semi_final')) {
+    matches.push({
+      league_id: leagueId,
+      home_team_id: qualifiedTeams[0].teamId, // Placeholder
+      away_team_id: qualifiedTeams[1].teamId, // Placeholder
+      match_date: currentDate.toISOString(),
+      cup_stage: 'third_place',
+      status: 'scheduled'
+    });
+  }
+
+  // Delete existing knockout matches (keep group stage matches)
+  await supabase
+    .from('matches')
+    .delete()
+    .eq('league_id', leagueId)
+    .neq('cup_stage', 'group_stage')
+    .eq('status', 'scheduled');
+
+  // Insert knockout matches
+  const { data, error } = await supabase
+    .from('matches')
+    .insert(matches)
+    .select();
+
+  return {
+    data: {
+      matchesCreated: data?.length || 0,
+      qualifiedTeams: qualifiedTeams.length,
+      initialStage
+    },
+    error
+  };
+}
+
+// Check if group stage is complete
+export async function isGroupStageComplete(leagueId: string) {
+  // Get all group stage matches
+  const { data: matches, error } = await supabase
+    .from('matches')
+    .select('id, status')
+    .eq('league_id', leagueId)
+    .eq('cup_stage', 'group_stage');
+
+  if (error || !matches) return { complete: false, error };
+
+  const totalMatches = matches.length;
+  const completedMatches = matches.filter(m => m.status === 'completed').length;
+
+  return {
+    complete: totalMatches > 0 && totalMatches === completedMatches,
+    total: totalMatches,
+    completed: completedMatches
+  };
+}

@@ -225,7 +225,7 @@ export default function LeagueDetailPage() {
           </div>
         </div>
 
-        {/* Tab Navigation - SAMA SEPERTI KLASEMEN */}
+        {/* Tab Navigation */}
         <div className="mb-6">
           <div className="flex rounded bg-slate-800/70 border border-slate-700/50 p-1 backdrop-blur-sm overflow-x-auto">
             <button
@@ -281,6 +281,72 @@ export default function LeagueDetailPage() {
           {/* Overview Tab */}
           {activeTab === 'overview' && (
             <div className="space-y-6">
+              {/* League Info Card */}
+              {league && (
+                <div className="rounded-lg bg-gradient-to-r from-slate-800/80 via-slate-800/60 to-slate-800/40 border border-slate-700/50 backdrop-blur-sm overflow-hidden">
+                  <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between p-4 gap-4">
+                    <div className="flex items-center gap-4">
+                      <div className="w-14 h-14 rounded-lg bg-slate-900/80 border border-slate-700/50 flex items-center justify-center">
+                        {league.logo_url ? (
+                          <Image src={league.logo_url} alt="" className="w-10 h-10 object-contain" width={40} height={40} />
+                        ) : league.type === 'efootball' ? (
+                          <svg className="w-6 h-6 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M15 5v2m0 4v2m0 4v2M5 5a2 2 0 00-2 2v3a2 2 0 110 4v3a2 2 0 002 2h14a2 2 0 002-2v-3a2 2 0 110-4V7a2 2 0 00-2-2H5z" />
+                          </svg>
+                        ) : (
+                          <svg className="w-6 h-6 text-emerald-400" fill="currentColor" viewBox="0 0 24 24">
+                            <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 17.93c-3.95-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L10 14v1c0 1.1.9 2 2 2v1.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.39z"/>
+                          </svg>
+                        )}
+                      </div>
+                      <div>
+                        <div className="flex items-center gap-2">
+                          <h2 className="text-xl font-bold text-white">{league.name}</h2>
+                          {(league.tournament_format === 'cup' || league.tournament_format === 'league_cup') && (
+                            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-xs font-bold bg-blue-500/20 text-blue-400 border border-blue-500/30">
+                              <span>🏅</span>
+                              Cup
+                            </span>
+                          )}
+                        </div>
+                        <div className="flex items-center gap-3 mt-1">
+                          <span className="text-sm text-slate-400">Musim {league.season}</span>
+                          <span className={`px-2 py-0.5 rounded text-xs font-bold shadow ${
+                            league.status === 'ongoing' 
+                              ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30' 
+                              : league.status === 'completed'
+                              ? 'bg-blue-500/20 text-blue-400 border border-blue-500/30'
+                              : 'bg-amber-500/20 text-amber-400 border border-amber-500/30'
+                          }`}>
+                            {league.status === 'ongoing' ? 'Berlangsung' : league.status === 'completed' ? 'Selesai' : 'Akan Datang'}
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-4">
+                      <div className="text-center">
+                        <p className="text-2xl font-bold text-white">{standings.length || cupGroups.reduce((acc, g) => acc + g.standings.length, 0)}</p>
+                        <p className="text-xs text-slate-500">Tim</p>
+                      </div>
+                      <div className="h-8 w-px bg-slate-700"></div>
+                      <div className="text-center">
+                        <p className="text-2xl font-bold text-white">{Math.round(matches.filter(m => m.status === 'completed').length)}</p>
+                        <p className="text-xs text-slate-500">Selesai</p>
+                      </div>
+                      <div className="h-8 w-px bg-slate-700"></div>
+                      <div className="text-center">
+                        <p className="text-2xl font-bold text-white">{matches.filter(m => m.status === 'scheduled').length}</p>
+                        <p className="text-xs text-slate-500">Akan Datang</p>
+                      </div>
+                    </div>
+                  </div>
+                  {/* Progress bar */}
+                  <div className="h-1 bg-slate-900/50">
+                    <div className="h-full bg-gradient-to-r from-emerald-500 via-blue-500 to-purple-500" style={{ width: `${matches.length > 0 ? (matches.filter(m => m.status === 'completed').length / matches.length) * 100 : 0}%` }}></div>
+                  </div>
+                </div>
+              )}
+
               {/* Quick Stats */}
               <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
                 <div className="rounded-lg bg-slate-900 border border-slate-800 p-4 text-center">
@@ -310,9 +376,12 @@ export default function LeagueDetailPage() {
               {/* Recent & Upcoming Matches */}
               <div className="grid md:grid-cols-2 gap-6">
                 {/* Recent Matches */}
-                <div className="rounded-lg bg-slate-900 border border-slate-800 overflow-hidden">
-                  <div className="px-4 py-3 border-b border-slate-800">
-                    <h3 className="text-white font-semibold">Hasil Terbaru</h3>
+                <div className="rounded-lg bg-slate-800/50 border border-slate-700/50 overflow-hidden backdrop-blur-sm">
+                  <div className="px-4 py-3 bg-slate-900/60 border-b border-slate-700/50 flex items-center gap-2">
+                    <svg className="w-4 h-4 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                    </svg>
+                    <h3 className="font-semibold text-white text-sm">Hasil Terbaru</h3>
                   </div>
                   <div className="p-4">
                     {recentMatches.length === 0 ? (
@@ -320,7 +389,7 @@ export default function LeagueDetailPage() {
                     ) : (
                       <div className="space-y-3">
                         {recentMatches.map(match => (
-                          <div key={match.id} className="rounded bg-slate-800/50 p-3">
+                          <div key={match.id} className="rounded bg-slate-800/50 p-3 border border-slate-700/30 hover:border-slate-600 transition-colors">
                             <div className="flex items-center justify-between mb-2 text-xs text-slate-500">
                               <span>
                                 {new Date(match.match_date).toLocaleDateString('id-ID', {
@@ -329,23 +398,23 @@ export default function LeagueDetailPage() {
                                 })}
                               </span>
                               {match.cup_stage && (
-                                <span className="text-purple-400">{match.cup_stage}</span>
+                                <span className="text-purple-400 font-medium">{match.cup_stage}</span>
                               )}
                             </div>
                             <div className="flex items-center justify-between text-sm">
                               <div className="flex items-center gap-2 flex-1 min-w-0">
-                                {match.home_team.logo_url && (
-                                  <Image src={match.home_team.logo_url} className="w-5 h-5 object-contain flex-shrink-0" alt=""  width={20} height={20} />
+                                {match.home_team?.logo_url && (
+                                  <Image src={match.home_team.logo_url} className="w-5 h-5 object-contain flex-shrink-0" alt="" width={20} height={20} />
                                 )}
-                                <span className="text-white truncate">{match.home_team.name}</span>
+                                <span className="text-white truncate">{match.home_team?.name}</span>
                               </div>
-                              <div className="px-3 py-1 bg-slate-900 rounded font-bold text-white mx-2">
+                              <div className="px-3 py-1 bg-gradient-to-r from-emerald-600/30 to-emerald-700/30 rounded font-bold text-white mx-2 text-xs border border-emerald-600/40">
                                 {match.home_score} - {match.away_score}
                               </div>
                               <div className="flex items-center gap-2 flex-1 min-w-0 justify-end">
-                                <span className="text-white truncate text-right">{match.away_team.name}</span>
-                                {match.away_team.logo_url && (
-                                  <Image src={match.away_team.logo_url} className="w-5 h-5 object-contain flex-shrink-0" alt=""  width={20} height={20} />
+                                <span className="text-white truncate text-right">{match.away_team?.name}</span>
+                                {match.away_team?.logo_url && (
+                                  <Image src={match.away_team.logo_url} className="w-5 h-5 object-contain flex-shrink-0" alt="" width={20} height={20} />
                                 )}
                               </div>
                             </div>
@@ -357,9 +426,12 @@ export default function LeagueDetailPage() {
                 </div>
 
                 {/* Upcoming Matches */}
-                <div className="rounded-lg bg-slate-900 border border-slate-800 overflow-hidden">
-                  <div className="px-4 py-3 border-b border-slate-800">
-                    <h3 className="text-white font-semibold">Pertandingan Mendatang</h3>
+                <div className="rounded-lg bg-slate-800/50 border border-slate-700/50 overflow-hidden backdrop-blur-sm">
+                  <div className="px-4 py-3 bg-slate-900/60 border-b border-slate-700/50 flex items-center gap-2">
+                    <svg className="w-4 h-4 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                    <h3 className="font-semibold text-white text-sm">Pertandingan Mendatang</h3>
                   </div>
                   <div className="p-4">
                     {upcomingMatches.length === 0 ? (
@@ -367,34 +439,35 @@ export default function LeagueDetailPage() {
                     ) : (
                       <div className="space-y-3">
                         {upcomingMatches.map(match => (
-                          <div key={match.id} className="rounded bg-slate-800/50 p-3">
+                          <div key={match.id} className="rounded bg-slate-800/50 p-3 border border-slate-700/30 hover:border-slate-600 transition-colors">
                             <div className="flex items-center justify-between mb-2 text-xs text-slate-500">
                               <span>
                                 {new Date(match.match_date).toLocaleDateString('id-ID', {
                                   day: 'numeric',
-                                  month: 'short',
+                                  month: 'short'
+                                })} {new Date(match.match_date).toLocaleTimeString('id-ID', {
                                   hour: '2-digit',
                                   minute: '2-digit'
                                 })}
                               </span>
                               {match.cup_stage && (
-                                <span className="text-purple-400">{match.cup_stage}</span>
+                                <span className="text-purple-400 font-medium">{match.cup_stage}</span>
                               )}
                             </div>
                             <div className="flex items-center justify-between text-sm">
                               <div className="flex items-center gap-2 flex-1 min-w-0">
-                                {match.home_team.logo_url && (
-                                  <Image src={match.home_team.logo_url} className="w-5 h-5 object-contain flex-shrink-0" alt=""  width={20} height={20} />
+                                {match.home_team?.logo_url && (
+                                  <Image src={match.home_team.logo_url} className="w-5 h-5 object-contain flex-shrink-0" alt="" width={20} height={20} />
                                 )}
-                                <span className="text-white truncate">{match.home_team.name}</span>
+                                <span className="text-white truncate">{match.home_team?.name}</span>
                               </div>
-                              <div className="px-3 py-1 text-slate-500 text-xs mx-2">
+                              <div className="px-3 py-1 text-slate-500 text-xs mx-2 font-medium">
                                 VS
                               </div>
                               <div className="flex items-center gap-2 flex-1 min-w-0 justify-end">
-                                <span className="text-white truncate text-right">{match.away_team.name}</span>
-                                {match.away_team.logo_url && (
-                                  <Image src={match.away_team.logo_url} className="w-5 h-5 object-contain flex-shrink-0" alt=""  width={20} height={20} />
+                                <span className="text-white truncate text-right">{match.away_team?.name}</span>
+                                {match.away_team?.logo_url && (
+                                  <Image src={match.away_team.logo_url} className="w-5 h-5 object-contain flex-shrink-0" alt="" width={20} height={20} />
                                 )}
                               </div>
                             </div>
@@ -458,9 +531,9 @@ export default function LeagueDetailPage() {
                           : null;
 
                         return (
-                          <div key={week} className="bg-slate-800/50 rounded-lg border border-slate-700 overflow-hidden">
+                          <div key={week} className="rounded-lg bg-slate-800/50 border border-slate-700/50 overflow-hidden backdrop-blur-sm">
                             {/* Week Header */}
-                            <div className="bg-slate-900/50 px-4 py-3 flex items-center justify-between">
+                            <div className="bg-slate-900/60 border-b border-slate-700/50 px-4 py-3 flex items-center justify-between">
                               <div className="flex items-center gap-3">
                                 <div className="flex h-7 w-7 items-center justify-center rounded bg-indigo-500/20 text-indigo-400">
                                   <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
@@ -474,7 +547,7 @@ export default function LeagueDetailPage() {
                                   )}
                                 </div>
                               </div>
-                              <span className="text-xs text-slate-400 bg-slate-700/50 px-2 py-1 rounded">{weekMatches.length} pertandingan</span>
+                              <span className="text-xs font-medium text-slate-400 bg-slate-700/50 px-2.5 py-1 rounded border border-slate-700">{weekMatches.length} pertandingan</span>
                             </div>
 
                             {/* Matches List */}
@@ -572,28 +645,33 @@ export default function LeagueDetailPage() {
                                           {/* Status & Expand */}
                                           <div className="flex items-center gap-2 ml-2">
                                             {match.cup_stage && (
-                                              <span className="px-2 py-1 rounded text-xs bg-purple-500/20 text-purple-400">
+                                              <span className="px-2 py-1 rounded text-xs font-medium bg-purple-500/20 text-purple-400 border border-purple-500/30 whitespace-nowrap">
                                                 {match.cup_stage}
                                               </span>
                                             )}
-                                            <span className={`px-2 py-1 rounded text-xs font-medium flex items-center gap-1 ${
-                                              match.status === 'completed' ? 'bg-green-600/20 text-green-400' :
-                                              match.status === 'scheduled' ? 'bg-blue-600/20 text-blue-400' :
-                                              'bg-slate-600/20 text-slate-400'
+                                            <span className={`px-2.5 py-1 rounded text-xs font-medium flex items-center gap-1.5 whitespace-nowrap border ${
+                                              match.status === 'completed' ? 'bg-green-600/20 text-green-400 border-green-600/30' :
+                                              match.status === 'scheduled' ? 'bg-blue-600/20 text-blue-400 border-blue-600/30' :
+                                              'bg-slate-600/20 text-slate-400 border-slate-600/30'
                                             }`}>
                                               {match.status === 'completed' ? (
-                                                <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
-                                                  <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
-                                                </svg>
+                                                <>
+                                                  <svg className="w-3.5 h-3.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
+                                                    <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                                                  </svg>
+                                                  <span className="hidden sm:inline">Selesai</span>
+                                                </>
                                               ) : (
-                                                <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
-                                                  <path strokeLinecap="round" strokeLinejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                                                </svg>
+                                                <>
+                                                  <svg className="w-3.5 h-3.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
+                                                    <path strokeLinecap="round" strokeLinejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                                  </svg>
+                                                  <span className="hidden sm:inline">Terjadwal</span>
+                                                </>
                                               )}
-                                              <span className="hidden sm:inline">{match.status === 'completed' ? 'Selesai' : 'Terjadwal'}</span>
                                             </span>
                                             {isCompleted && (
-                                              <div className={`text-slate-400 transition-transform ${isExpanded ? 'rotate-180' : ''}`}>
+                                              <div className={`text-slate-400 transition-transform shrink-0 ${isExpanded ? 'rotate-180' : ''}`}>
                                                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
                                                   <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
                                                 </svg>
@@ -733,26 +811,26 @@ export default function LeagueDetailPage() {
 
               {/* Quick Stats */}
               {matches.length > 0 && (
-                <div className="mt-6 grid grid-cols-2 md:grid-cols-4 gap-3">
-                  <div className="bg-slate-800/50 rounded-lg p-4 border border-slate-700 text-center">
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                  <div className="rounded-lg bg-slate-800/50 border border-slate-700/50 p-4 text-center backdrop-blur-sm">
                     <p className="text-2xl font-bold text-white">{matches.length}</p>
-                    <p className="text-xs text-slate-400">Total Pertandingan</p>
+                    <p className="text-xs text-slate-500 mt-1">Total Pertandingan</p>
                   </div>
-                  <div className="bg-slate-800/50 rounded-lg p-4 border border-slate-700 text-center">
+                  <div className="rounded-lg bg-slate-800/50 border border-slate-700/50 p-4 text-center backdrop-blur-sm">
                     <p className="text-2xl font-bold text-green-400">{matches.filter(m => m.status === 'completed').length}</p>
-                    <p className="text-xs text-slate-400">Selesai</p>
+                    <p className="text-xs text-slate-500 mt-1">Selesai</p>
                   </div>
-                  <div className="bg-slate-800/50 rounded-lg p-4 border border-slate-700 text-center">
+                  <div className="rounded-lg bg-slate-800/50 border border-slate-700/50 p-4 text-center backdrop-blur-sm">
                     <p className="text-2xl font-bold text-yellow-400">
                       {matches.filter(m => m.status === 'completed' && m.home_score === m.away_score).length}
                     </p>
-                    <p className="text-xs text-slate-400">Hasil Seri</p>
+                    <p className="text-xs text-slate-500 mt-1">Hasil Seri</p>
                   </div>
-                  <div className="bg-slate-800/50 rounded-lg p-4 border border-slate-700 text-center">
+                  <div className="rounded-lg bg-slate-800/50 border border-slate-700/50 p-4 text-center backdrop-blur-sm">
                     <p className="text-2xl font-bold text-purple-400">
                       {matches.filter(m => m.status === 'completed').reduce((acc, m) => acc + (m.home_score || 0) + (m.away_score || 0), 0)}
                     </p>
-                    <p className="text-xs text-slate-400">Total Gol</p>
+                    <p className="text-xs text-slate-500 mt-1">Total Gol</p>
                   </div>
                 </div>
               )}
@@ -763,9 +841,14 @@ export default function LeagueDetailPage() {
           {activeTab === 'bracket' && isCupFormat && (
             <div>
               {knockoutMatches.length === 0 ? (
-                <div className="rounded-lg bg-slate-900 border border-slate-800 p-12 text-center">
-                  <p className="text-slate-500 mb-2 text-sm">Belum ada babak knockout</p>
-                  <p className="text-xs text-slate-600">Bracket akan muncul setelah fase grup selesai</p>
+                <div className="rounded-lg bg-slate-800/50 border border-slate-700/50 p-12 text-center backdrop-blur-sm">
+                  <div className="flex h-16 w-16 items-center justify-center rounded-xl bg-slate-700/50 text-slate-400 mx-auto mb-4">
+                    <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z" />
+                    </svg>
+                  </div>
+                  <h2 className="text-xl font-semibold text-white mb-2">Belum Ada Babak Knockout</h2>
+                  <p className="text-sm text-slate-400">Bracket akan muncul setelah fase grup selesai dan tim-tim lolos ke babak knockout.</p>
                 </div>
               ) : (
                 <div className="space-y-6">
@@ -787,6 +870,29 @@ export default function LeagueDetailPage() {
           )}
         </div>
       </div>
+
+      {/* Footer */}
+      <footer className="border-t border-slate-800/50 mt-12 relative z-10">
+        <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
+          <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
+            <div className="flex items-center gap-3 text-white">
+              <div className="h-8 w-8 rounded bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center">
+                <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                  <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 17.93c-3.95-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L10 14v1c0 1.1.9 2 2 2v1.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.39z"/>
+                </svg>
+              </div>
+              <span className="font-bold">Football Leagues</span>
+            </div>
+            <div className="flex items-center gap-6 text-sm text-slate-500">
+              <Link href="/standings" className="hover:text-white transition-colors">Klasemen</Link>
+              <Link href="/schedule" className="hover:text-white transition-colors">Jadwal</Link>
+              <Link href="/teams" className="hover:text-white transition-colors">Tim</Link>
+              <Link href="/login" className="hover:text-white transition-colors">Admin</Link>
+            </div>
+            <p className="text-sm text-slate-600">© 2026 Football Leagues. All rights reserved.</p>
+          </div>
+        </div>
+      </footer>
     </div>
   );
 }

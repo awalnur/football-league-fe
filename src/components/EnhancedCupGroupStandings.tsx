@@ -51,16 +51,16 @@ export default function EnhancedCupGroupStandings({ groups }: EnhancedCupGroupSt
                   <div>
                     <h3 className="text-xl font-bold text-white flex items-center gap-2">
                       <span className="text-2xl">🏆</span>
-                      <span>Group {group.group_name}</span>
+                      <span>Grup {group.group_name}</span>
                     </h3>
                     <div className="flex items-center gap-4 mt-1 text-xs text-blue-100">
                       <span className="flex items-center gap-1">
                         <span>⚽</span>
-                        <span>{stats.totalGoals} goals</span>
+                        <span>{stats.totalGoals} gol</span>
                       </span>
                       <span className="flex items-center gap-1">
                         <span>📊</span>
-                        <span>{stats.totalMatches} matches</span>
+                        <span>{stats.totalMatches} pertandingan</span>
                       </span>
                     </div>
                   </div>
@@ -68,7 +68,7 @@ export default function EnhancedCupGroupStandings({ groups }: EnhancedCupGroupSt
                     <div className="text-3xl font-bold text-white/90">
                       {group.standings.length}
                     </div>
-                    <div className="text-xs text-blue-100">teams</div>
+                    <div className="text-xs text-blue-100">tim</div>
                   </div>
                 </div>
               </div>
@@ -77,19 +77,19 @@ export default function EnhancedCupGroupStandings({ groups }: EnhancedCupGroupSt
               <div className="relative bg-slate-900/80 px-5 py-3 border-b border-slate-700/50">
                 <div className="grid grid-cols-12 gap-2 text-xs font-semibold uppercase tracking-wider text-slate-400">
                   <div className="col-span-1 text-center">#</div>
-                  <div className="col-span-4">Team</div>
-                  <div className="col-span-1 text-center" title="Played">P</div>
-                  <div className="col-span-1 text-center" title="Won">W</div>
-                  <div className="col-span-1 text-center" title="Draw">D</div>
-                  <div className="col-span-1 text-center" title="Lost">L</div>
-                  <div className="col-span-1 text-center hidden sm:block" title="Goal Difference">GD</div>
+                  <div className="col-span-4">Tim</div>
+                  <div className="col-span-1 text-center" title="Dimainkan">P</div>
+                  <div className="col-span-1 text-center" title="Menang">W</div>
+                  <div className="col-span-1 text-center" title="Seri">D</div>
+                  <div className="col-span-1 text-center" title="Kalah">L</div>
+                  <div className="col-span-1 text-center hidden sm:block" title="Selisih Gol">GD</div>
                   <div className="col-span-2 text-center font-bold">Pts</div>
                 </div>
               </div>
 
               {/* Standings Rows */}
               <div className="relative divide-y divide-slate-700/30">
-                {group.standings.map((standing, index) => {
+                {group.standings.map((standing) => {
                   const isQualified = standing.qualified;
                   const position = standing.position;
                   const isLeader = position === 1;
@@ -97,7 +97,7 @@ export default function EnhancedCupGroupStandings({ groups }: EnhancedCupGroupSt
                   return (
                     <div
                       key={standing.id}
-                      className={`relative transition-all duration-200 hover:bg-slate-700/30 px-5 py-4 ${
+                      className={`relative transition-all duration-200 hover:bg-slate-700/40 px-5 py-4 group ${
                         isQualified ? 'bg-emerald-900/10' : ''
                       } ${isLeader ? 'bg-gradient-to-r from-yellow-900/10 to-transparent' : ''}`}
                     >
@@ -113,7 +113,7 @@ export default function EnhancedCupGroupStandings({ groups }: EnhancedCupGroupSt
                         </div>
 
                         {/* Team */}
-                        <div className="col-span-4 flex items-center gap-2 min-w-0">
+                        <div className="col-span-4 flex items-center gap-2 min-w-0 group/team">
                           {standing.team?.logo_url ? (
                             <div className="relative w-8 h-8 flex-shrink-0">
                               <Image
@@ -132,7 +132,7 @@ export default function EnhancedCupGroupStandings({ groups }: EnhancedCupGroupSt
                             </div>
                           )}
                           <div className="flex-1 min-w-0">
-                            <span className={`truncate font-semibold block ${
+                            <span className={`truncate font-semibold block transition-colors group-hover/team:text-emerald-300 ${
                               isLeader ? 'text-yellow-300' : 'text-white'
                             }`}>
                               {standing.team?.short_name || standing.team?.name}
@@ -167,7 +167,7 @@ export default function EnhancedCupGroupStandings({ groups }: EnhancedCupGroupSt
 
                         {/* Points */}
                         <div className="col-span-2 flex justify-center">
-                          <div className={`inline-flex items-center justify-center rounded-lg px-3 py-1.5 text-sm font-bold text-white shadow-lg min-w-[3rem] ${
+                          <div className={`inline-flex items-center justify-center rounded-lg px-3 py-1.5 text-sm font-bold text-white shadow-lg min-w-[3rem] transition-transform hover:scale-105 ${
                             isLeader 
                               ? 'bg-gradient-to-r from-yellow-500 to-yellow-600 shadow-yellow-500/30' 
                               : 'bg-gradient-to-r from-indigo-600 to-purple-600 shadow-indigo-500/30'
@@ -186,7 +186,7 @@ export default function EnhancedCupGroupStandings({ groups }: EnhancedCupGroupSt
                 <div className="relative border-t border-slate-700/50 bg-slate-900/50 px-5 py-3">
                   <div className="flex items-center gap-2 text-xs text-slate-400">
                     <div className="h-3 w-3 rounded-full bg-emerald-500 shadow-lg shadow-emerald-500/50"></div>
-                    <span>Qualified for knockout stage</span>
+                    <span>Lolos ke babak knockout</span>
                   </div>
                 </div>
               )}
@@ -199,36 +199,36 @@ export default function EnhancedCupGroupStandings({ groups }: EnhancedCupGroupSt
       <div className="bg-slate-800/50 backdrop-blur-sm border border-slate-700/50 rounded-xl p-6">
         <h4 className="text-sm font-semibold text-white mb-4 flex items-center gap-2">
           <span>📖</span>
-          <span>Legend</span>
+          <span>Keterangan</span>
         </h4>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
           <div className="flex items-center gap-2 text-sm">
             <span className="text-slate-400">P:</span>
-            <span className="text-white">Played</span>
+            <span className="text-white">Dimainkan</span>
           </div>
           <div className="flex items-center gap-2 text-sm">
             <span className="text-slate-400">W:</span>
-            <span className="text-emerald-400">Won</span>
+            <span className="text-emerald-400">Menang</span>
           </div>
           <div className="flex items-center gap-2 text-sm">
             <span className="text-slate-400">D:</span>
-            <span className="text-amber-400">Draw</span>
+            <span className="text-amber-400">Seri</span>
           </div>
           <div className="flex items-center gap-2 text-sm">
             <span className="text-slate-400">L:</span>
-            <span className="text-red-400">Lost</span>
+            <span className="text-red-400">Kalah</span>
           </div>
           <div className="flex items-center gap-2 text-sm">
             <span className="text-slate-400">GD:</span>
-            <span className="text-white">Goal Difference</span>
+            <span className="text-white">Selisih Gol</span>
           </div>
           <div className="flex items-center gap-2 text-sm">
             <span className="text-slate-400">Pts:</span>
-            <span className="text-white">Points</span>
+            <span className="text-white">Poin</span>
           </div>
           <div className="flex items-center gap-2 text-sm col-span-2">
             <div className="h-3 w-3 rounded-full bg-emerald-500"></div>
-            <span className="text-white">Qualified</span>
+            <span className="text-white">Lolos ke Babak Knockout</span>
           </div>
         </div>
       </div>

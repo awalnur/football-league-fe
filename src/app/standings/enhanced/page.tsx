@@ -42,7 +42,7 @@ function EnhancedStandingsContent() {
 
       // Redirect to cup page for cup tournaments
       if ((leagueData.tournament_format === 'cup' || leagueData.tournament_format === 'league_cup')) {
-        window.location.href = `/cup/${leagueId}`;
+        window.location.href = `/league/${leagueId}`;
         return;
       }
 

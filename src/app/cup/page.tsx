@@ -7,7 +7,7 @@ import Footer from '@/components/Footer';
 
 /**
  * Legacy route handler for /cup?league={id}
- * Redirects to new cleaner route /cup/{id}
+ * Redirects to new cleaner route /league/{id}
  */
 function CupRedirect() {
   const searchParams = useSearchParams();
@@ -17,7 +17,7 @@ function CupRedirect() {
   useEffect(() => {
     if (leagueId) {
       // Redirect to new route
-      router.replace(`/cup/${leagueId}`);
+      router.replace(`/league/${leagueId}`);
     } else {
       // No league ID provided, go to standings
       router.replace('/standings');

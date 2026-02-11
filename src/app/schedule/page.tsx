@@ -4,7 +4,7 @@ import Image from 'next/image';
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { getLeagues, getMatchesByLeague } from '@/lib/supabase';
+import { getLeagues, getMatchesByLeague, getCupGroups } from '@/lib/supabase';
 
 // SVG Icon Components
 const Icons = {
@@ -68,6 +68,11 @@ const Icons = {
       <path strokeLinecap="round" strokeLinejoin="round" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
     </svg>
   ),
+  group: (
+    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
+      <path strokeLinecap="round" strokeLinejoin="round" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
+    </svg>
+  ),
 };
 
 interface Match {
@@ -77,6 +82,8 @@ interface Match {
   status: string;
   home_score: number | null;
   away_score: number | null;
+  cup_stage?: string | null;
+  cup_group_id?: string | null;
   home_team: { id: string; name: string; logo_url: string | null };
   away_team: { id: string; name: string; logo_url: string | null };
 }
@@ -86,14 +93,126 @@ interface League {
   name: string;
   type: 'football' | 'efootball';
   season: string;
+  tournament_format?: string;
+  has_group_stage?: boolean;
+}
+
+interface CupGroup {
+  id: string;
+  group_name: string;
+  league_id: string;
+}
+
+// Reusable Match Row Component
+function MatchRow({
+  match,
+  showGroup = false,
+  cupGroups = []
+}: {
+  match: Match;
+  showGroup?: boolean;
+  cupGroups?: CupGroup[];
+}) {
+  const matchDate = match.match_date ? new Date(match.match_date) : null;
+  const group = cupGroups.find(g => g.id === match.cup_group_id);
+
+  return (
+    <div className="p-3 hover:bg-slate-700/30 transition-colors">
+      <div className="flex items-center gap-3">
+        {/* Date Column */}
+        <div className="hidden sm:flex flex-col items-center justify-center min-w-[60px] text-center">
+          {matchDate ? (
+            <>
+              <span className="text-xs text-slate-400 uppercase">{matchDate.toLocaleDateString('id-ID', { weekday: 'short' })}</span>
+              <span className="text-lg font-bold text-white">{matchDate.getDate()}</span>
+              <span className="text-xs text-slate-400">{matchDate.toLocaleDateString('id-ID', { month: 'short' })}</span>
+            </>
+          ) : (
+            <span className="text-xs text-slate-500">TBD</span>
+          )}
+        </div>
+
+        <div className="hidden sm:block w-px h-10 bg-slate-700"></div>
+
+        <div className="flex items-center justify-between flex-1">
+          <div className="flex items-center gap-3 flex-1">
+            {/* Home Team */}
+            <div className="flex items-center gap-2 flex-1 justify-end">
+              <span className="text-sm text-white font-medium text-right truncate max-w-[80px] sm:max-w-[120px]">{match.home_team?.name}</span>
+              <div className="w-8 h-8 rounded bg-slate-700 flex items-center justify-center shrink-0">
+                {match.home_team?.logo_url ? (
+                  <Image src={match.home_team.logo_url} alt="" className="w-6 h-6 object-contain" width={24} height={24} />
+                ) : (
+                  <span className="text-slate-400">{Icons.home}</span>
+                )}
+              </div>
+            </div>
+
+            {/* Score */}
+            <div className="min-w-[80px] text-center">
+              {match.status === 'completed' ? (
+                <div className="bg-green-600/20 border border-green-600/30 rounded px-2 py-1">
+                  <span className="text-base font-bold text-white">{match.home_score} - {match.away_score}</span>
+                </div>
+              ) : (
+                <div className="bg-slate-700/50 rounded px-2 py-1">
+                  <span className="text-xs text-slate-300">
+                    {matchDate ? matchDate.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' }) + ' WIB' : 'TBD'}
+                  </span>
+                  <span className="sm:hidden block text-xs text-slate-400 mt-0.5">
+                    {matchDate ? matchDate.toLocaleDateString('id-ID', { day: 'numeric', month: 'short' }) : ''}
+                  </span>
+                </div>
+              )}
+            </div>
+
+            {/* Away Team */}
+            <div className="flex items-center gap-2 flex-1">
+              <div className="w-8 h-8 rounded bg-slate-700 flex items-center justify-center shrink-0">
+                {match.away_team?.logo_url ? (
+                  <Image src={match.away_team.logo_url} alt="" className="w-6 h-6 object-contain" width={24} height={24} />
+                ) : (
+                  <span className="text-slate-400">{Icons.plane}</span>
+                )}
+              </div>
+              <span className="text-sm text-white font-medium truncate max-w-[80px] sm:max-w-[120px]">{match.away_team?.name}</span>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-2 ml-2">
+            {/* Group Badge - show in week view */}
+            {showGroup && group && (
+              <span className="hidden sm:inline-flex px-1.5 py-0.5 rounded text-xs font-bold bg-yellow-500/20 text-yellow-400">
+                {group.group_name}
+              </span>
+            )}
+
+            {/* Status Badge */}
+            <span className={`px-2 py-1 rounded text-xs font-medium flex items-center gap-1 ${
+              match.status === 'completed' ? 'bg-green-600/20 text-green-400' :
+              match.status === 'scheduled' ? 'bg-blue-600/20 text-blue-400' :
+              'bg-slate-600/20 text-slate-400'
+            }`}>
+              {match.status === 'completed' ? Icons.check : Icons.clock}
+              <span className="hidden sm:inline">{match.status === 'completed' ? 'Selesai' : match.status === 'scheduled' ? 'Terjadwal' : match.status}</span>
+            </span>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
 }
 
 export default function SchedulePage() {
   const [leagues, setLeagues] = useState<League[]>([]);
   const [matches, setMatches] = useState<Match[]>([]);
+  const [cupGroups, setCupGroups] = useState<CupGroup[]>([]);
   const [selectedLeague, setSelectedLeague] = useState<string>('');
+  const [selectedLeagueData, setSelectedLeagueData] = useState<League | null>(null);
   const [activeTab, setActiveTab] = useState<'football' | 'efootball'>('football');
   const [selectedWeek, setSelectedWeek] = useState<number | 'all'>('all');
+  const [selectedGroup, setSelectedGroup] = useState<string>('all');
+  const [viewMode, setViewMode] = useState<'week' | 'group'>('week');
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -110,21 +229,38 @@ export default function SchedulePage() {
         setLeagues(leaguesData as League[]);
         const firstLeague = leaguesData.find((l: League) => l.type === activeTab);
         let leagueToLoad = '';
+        let leagueData: League | null = null;
 
         if (firstLeague) {
           leagueToLoad = firstLeague.id;
+          leagueData = firstLeague as League;
           setSelectedLeague(firstLeague.id);
+          setSelectedLeagueData(firstLeague as League);
         } else if (leaguesData.length > 0) {
           leagueToLoad = leaguesData[0].id;
+          leagueData = leaguesData[0] as League;
           setSelectedLeague(leaguesData[0].id);
+          setSelectedLeagueData(leaguesData[0] as League);
           setActiveTab(leaguesData[0].type);
         }
 
-        // Load matches for the selected league
+        // Load matches and groups for the selected league
         if (leagueToLoad) {
           const { data: matchesData } = await getMatchesByLeague(leagueToLoad);
           if (isMounted && matchesData) {
             setMatches(matchesData as unknown as Match[]);
+          }
+
+          // Load cup groups if it's a cup format
+          if (leagueData?.tournament_format === 'cup' || leagueData?.has_group_stage) {
+            const { data: groupsData } = await getCupGroups(leagueToLoad);
+            if (isMounted && groupsData) {
+              setCupGroups(groupsData as CupGroup[]);
+              // Auto switch to group view if groups exist
+              if (groupsData.length > 0) {
+                setViewMode('group');
+              }
+            }
           }
         }
       }
@@ -151,8 +287,30 @@ export default function SchedulePage() {
         } else {
           setMatches([]);
         }
-        setLoading(false);
       }
+
+      // Load cup groups
+      const leagueData = leagues.find(l => l.id === selectedLeague);
+      setSelectedLeagueData(leagueData || null);
+
+      if (leagueData?.tournament_format === 'cup' || leagueData?.has_group_stage) {
+        const { data: groupsData } = await getCupGroups(selectedLeague);
+        if (isMounted) {
+          if (groupsData) {
+            setCupGroups(groupsData as CupGroup[]);
+            if (groupsData.length > 0 && viewMode === 'week') {
+              setViewMode('group');
+            }
+          } else {
+            setCupGroups([]);
+          }
+        }
+      } else {
+        setCupGroups([]);
+        setViewMode('week');
+      }
+
+      if (isMounted) setLoading(false);
     }
 
     // Only load if selectedLeague is set and leagues are already loaded
@@ -161,6 +319,7 @@ export default function SchedulePage() {
     }
 
     return () => { isMounted = false; };
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedLeague, leagues.length]);
 
   const handleTabChange = (tab: 'football' | 'efootball') => {
@@ -173,17 +332,61 @@ export default function SchedulePage() {
 
   const filteredLeagues = leagues.filter(l => l.type === activeTab);
   const matchWeeks = [...new Set(matches.map(m => m.match_week))].sort((a, b) => a - b);
+  const isCupFormat = selectedLeagueData?.tournament_format === 'cup' || selectedLeagueData?.has_group_stage || cupGroups.length > 0;
 
-  const filteredMatches = selectedWeek === 'all'
-    ? matches
-    : matches.filter(m => m.match_week === selectedWeek);
+  // Filter matches based on view mode
+  const getFilteredMatches = () => {
+    let filtered = matches;
 
-  const groupedMatches = filteredMatches.reduce((acc, match) => {
-    const week = match.match_week;
-    if (!acc[week]) acc[week] = [];
-    acc[week].push(match);
-    return acc;
-  }, {} as Record<number, Match[]>);
+    if (viewMode === 'week' && selectedWeek !== 'all') {
+      filtered = filtered.filter(m => m.match_week === selectedWeek);
+    }
+
+    if (viewMode === 'group' && selectedGroup !== 'all') {
+      filtered = filtered.filter(m => m.cup_group_id === selectedGroup);
+    }
+
+    return filtered;
+  };
+
+  const filteredMatches = getFilteredMatches();
+
+  // Group matches by week or by cup group
+  const groupedMatches = viewMode === 'group' && isCupFormat
+    ? filteredMatches.reduce((acc, match) => {
+        const groupId = match.cup_group_id || 'knockout';
+        if (!acc[groupId]) acc[groupId] = [];
+        acc[groupId].push(match);
+        return acc;
+      }, {} as Record<string, Match[]>)
+    : filteredMatches.reduce((acc, match) => {
+        const week = match.match_week;
+        if (!acc[week]) acc[week] = [];
+        acc[week].push(match);
+        return acc;
+      }, {} as Record<number, Match[]>);
+
+  // Get group name by ID
+  const getGroupName = (groupId: string) => {
+    if (groupId === 'knockout') return 'Babak Knockout';
+    const group = cupGroups.find(g => g.id === groupId);
+    return group ? `Grup ${group.group_name}` : groupId;
+  };
+
+  // Get cup stage label
+  const getCupStageLabel = (stage: string | null | undefined) => {
+    if (!stage) return null;
+    const labels: Record<string, string> = {
+      'group_stage': 'Fase Grup',
+      'round_of_32': 'Babak 32 Besar',
+      'round_of_16': 'Babak 16 Besar',
+      'quarter_final': 'Perempat Final',
+      'semi_final': 'Semi Final',
+      'final': 'Final',
+      'third_place': 'Perebutan Juara 3'
+    };
+    return labels[stage] || stage;
+  };
 
   return (
     <div className="min-h-screen bg-geometric">
@@ -228,33 +431,78 @@ export default function SchedulePage() {
         </div>
 
         {/* Filters */}
-        <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-          <div className="flex rounded-lg bg-slate-800 p-1">
-            <button onClick={() => handleTabChange('football')} className={`flex items-center gap-2 rounded-md px-4 py-2 text-sm font-medium transition-all ${activeTab === 'football' ? 'bg-green-600 text-white shadow' : 'text-slate-400 hover:text-white'}`}>
-              {Icons.football}
-              <span>Football</span>
-            </button>
-            <button onClick={() => handleTabChange('efootball')} className={`flex items-center gap-2 rounded-md px-4 py-2 text-sm font-medium transition-all ${activeTab === 'efootball' ? 'bg-purple-600 text-white shadow' : 'text-slate-400 hover:text-white'}`}>
-              {Icons.gamepad}
-              <span>eFootball</span>
-            </button>
+        <div className="mb-6 flex flex-col gap-4">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+            <div className="flex rounded-lg bg-slate-800 p-1">
+              <button onClick={() => handleTabChange('football')} className={`flex items-center gap-2 rounded-md px-4 py-2 text-sm font-medium transition-all ${activeTab === 'football' ? 'bg-green-600 text-white shadow' : 'text-slate-400 hover:text-white'}`}>
+                {Icons.football}
+                <span>Football</span>
+              </button>
+              <button onClick={() => handleTabChange('efootball')} className={`flex items-center gap-2 rounded-md px-4 py-2 text-sm font-medium transition-all ${activeTab === 'efootball' ? 'bg-purple-600 text-white shadow' : 'text-slate-400 hover:text-white'}`}>
+                {Icons.gamepad}
+                <span>eFootball</span>
+              </button>
+            </div>
+            <div className="flex gap-3 flex-wrap">
+              <select value={selectedLeague} onChange={(e) => setSelectedLeague(e.target.value)} className="rounded-lg bg-slate-800 border border-slate-700 px-3 py-2 text-sm text-white focus:outline-none focus:ring-2 focus:ring-blue-500">
+                {filteredLeagues.map((league) => (
+                  <option key={league.id} value={league.id}>{league.name}</option>
+                ))}
+              </select>
+
+              {/* View Mode Toggle - Only for Cup Format */}
+              {isCupFormat && cupGroups.length > 0 && (
+                <div className="flex rounded-lg bg-slate-800 p-1">
+                  <button
+                    onClick={() => setViewMode('group')}
+                    className={`flex items-center gap-1.5 rounded-md px-3 py-1.5 text-sm font-medium transition-all ${viewMode === 'group' ? 'bg-yellow-600 text-white shadow' : 'text-slate-400 hover:text-white'}`}
+                  >
+                    {Icons.group}
+                    <span>Per Grup</span>
+                  </button>
+                  <button
+                    onClick={() => setViewMode('week')}
+                    className={`flex items-center gap-1.5 rounded-md px-3 py-1.5 text-sm font-medium transition-all ${viewMode === 'week' ? 'bg-blue-600 text-white shadow' : 'text-slate-400 hover:text-white'}`}
+                  >
+                    {Icons.calendar}
+                    <span>Per Pekan</span>
+                  </button>
+                </div>
+              )}
+            </div>
           </div>
-          <div className="flex gap-3">
-            <select value={selectedLeague} onChange={(e) => setSelectedLeague(e.target.value)} className="rounded-lg bg-slate-800 border border-slate-700 px-3 py-2 text-sm text-white focus:outline-none focus:ring-2 focus:ring-blue-500">
-              {filteredLeagues.map((league) => (
-                <option key={league.id} value={league.id}>{league.name}</option>
-              ))}
-            </select>
-            <select value={selectedWeek} onChange={(e) => setSelectedWeek(e.target.value === 'all' ? 'all' : Number(e.target.value))} className="rounded-lg bg-slate-800 border border-slate-700 px-3 py-2 text-sm text-white focus:outline-none focus:ring-2 focus:ring-blue-500">
-              <option value="all">Semua Pekan</option>
-              {matchWeeks.map((week) => (
-                <option key={week} value={week}>Pekan {week}</option>
-              ))}
-            </select>
+
+          {/* Secondary Filters */}
+          <div className="flex gap-3 flex-wrap">
+            {viewMode === 'week' && (
+              <select value={selectedWeek} onChange={(e) => setSelectedWeek(e.target.value === 'all' ? 'all' : Number(e.target.value))} className="rounded-lg bg-slate-800 border border-slate-700 px-3 py-2 text-sm text-white focus:outline-none focus:ring-2 focus:ring-blue-500">
+                <option value="all">Semua Pekan</option>
+                {matchWeeks.map((week) => (
+                  <option key={week} value={week}>Pekan {week}</option>
+                ))}
+              </select>
+            )}
+
+            {viewMode === 'group' && isCupFormat && cupGroups.length > 0 && (
+              <select value={selectedGroup} onChange={(e) => setSelectedGroup(e.target.value)} className="rounded-lg bg-slate-800 border border-slate-700 px-3 py-2 text-sm text-white focus:outline-none focus:ring-2 focus:ring-yellow-500">
+                <option value="all">Semua Grup</option>
+                {cupGroups.map((group) => (
+                  <option key={group.id} value={group.id}>Grup {group.group_name}</option>
+                ))}
+                <option value="knockout">Babak Knockout</option>
+              </select>
+            )}
+
+            {/* Cup Format Badge */}
+            {isCupFormat && (
+              <div className="flex items-center gap-2 px-3 py-2 bg-yellow-500/10 border border-yellow-500/30 rounded-lg">
+                {Icons.trophy}
+                <span className="text-sm text-yellow-400 font-medium">Format Cup</span>
+              </div>
+            )}
           </div>
         </div>
-
-        {/* Schedule */}
+          {/* Schedule */}
         {loading ? (
           <div className="flex items-center justify-center py-16">
             <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-blue-500"></div>
@@ -267,11 +515,109 @@ export default function SchedulePage() {
             <h2 className="text-lg font-semibold text-white mb-2">Belum Ada Jadwal</h2>
             <p className="text-sm text-slate-400">{leagues.length === 0 ? 'Belum ada liga yang dibuat' : 'Liga ini belum memiliki jadwal pertandingan.'}</p>
           </div>
+        ) : viewMode === 'group' && isCupFormat ? (
+          /* Group View for Cup Format */
+          <div className="space-y-6">
+            {/* Sort groups: A, B, C, D first, then knockout */}
+            {Object.entries(groupedMatches)
+              .sort(([a], [b]) => {
+                if (a === 'knockout') return 1;
+                if (b === 'knockout') return -1;
+                return a.localeCompare(b);
+              })
+              .map(([groupId, groupMatches]) => {
+                const group = cupGroups.find(g => g.id === groupId);
+                const isKnockout = groupId === 'knockout';
+
+                // Get unique cup stages in this group
+                const stages = isKnockout
+                  ? [...new Set(groupMatches.map(m => m.cup_stage).filter(Boolean))]
+                  : [];
+
+                return (
+                  <div key={groupId} className="bg-slate-800/50 rounded-lg border border-slate-700 overflow-hidden">
+                    {/* Group/Knockout Header */}
+                    <div className={`px-4 py-3 flex items-center justify-between ${
+                      isKnockout 
+                        ? 'bg-gradient-to-r from-purple-900/50 to-indigo-900/50' 
+                        : 'bg-gradient-to-r from-yellow-900/30 to-orange-900/30'
+                    }`}>
+                      <div className="flex items-center gap-3">
+                        <div className={`flex h-9 w-9 items-center justify-center rounded-lg font-bold text-white ${
+                          isKnockout 
+                            ? 'bg-gradient-to-br from-purple-500 to-indigo-600' 
+                            : 'bg-gradient-to-br from-yellow-500 to-orange-600'
+                        }`}>
+                          {isKnockout ? '🏆' : group?.group_name || '?'}
+                        </div>
+                        <div>
+                          <h3 className="text-base font-bold text-white">
+                            {isKnockout ? 'Babak Knockout' : `Grup ${group?.group_name}`}
+                          </h3>
+                          <p className="text-xs text-slate-400">
+                            {isKnockout
+                              ? `${stages.length} babak`
+                              : `${groupMatches.length} pertandingan`}
+                          </p>
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <span className={`text-xs px-2 py-1 rounded font-medium ${
+                          isKnockout 
+                            ? 'bg-purple-500/20 text-purple-300' 
+                            : 'bg-yellow-500/20 text-yellow-300'
+                        }`}>
+                          {groupMatches.filter(m => m.status === 'completed').length}/{groupMatches.length} selesai
+                        </span>
+                      </div>
+                    </div>
+
+                    {/* Matches in Group */}
+                    <div className="divide-y divide-slate-700/50">
+                      {isKnockout ? (
+                        /* Knockout matches grouped by stage */
+                        stages.map(stage => {
+                          const stageMatches = groupMatches.filter(m => m.cup_stage === stage);
+                          return (
+                            <div key={stage}>
+                              {/* Stage Sub-header */}
+                              <div className="bg-slate-900/50 px-4 py-2 flex items-center gap-2">
+                                <span className="text-xs font-semibold text-purple-400 uppercase tracking-wider">
+                                  {getCupStageLabel(stage)}
+                                </span>
+                                <span className="text-xs text-slate-500">
+                                  ({stageMatches.length} pertandingan)
+                                </span>
+                              </div>
+                              {stageMatches.map((match) => (
+                                <MatchRow key={match.id} match={match} />
+                              ))}
+                            </div>
+                          );
+                        })
+                      ) : (
+                        /* Group stage matches */
+                        groupMatches
+                          .sort((a, b) => {
+                            const dateA = a.match_date ? new Date(a.match_date).getTime() : 0;
+                            const dateB = b.match_date ? new Date(b.match_date).getTime() : 0;
+                            return dateA - dateB;
+                          })
+                          .map((match) => (
+                            <MatchRow key={match.id} match={match} />
+                          ))
+                      )}
+                    </div>
+                  </div>
+                );
+              })}
+          </div>
         ) : (
+          /* Week View (Default) */
           <div className="space-y-6">
             {Object.entries(groupedMatches).sort(([a], [b]) => Number(a) - Number(b)).map(([week, weekMatches]) => {
               // Get date range for this week
-              const matchDates = weekMatches
+              const matchDates = (weekMatches as Match[])
                 .filter(m => m.match_date)
                 .map(m => new Date(m.match_date!))
                 .sort((a, b) => a.getTime() - b.getTime());
@@ -296,79 +642,12 @@ export default function SchedulePage() {
                       )}
                     </div>
                   </div>
-                  <span className="text-xs text-slate-400 bg-slate-700/50 px-2 py-1 rounded">{weekMatches.length} pertandingan</span>
+                  <span className="text-xs text-slate-400 bg-slate-700/50 px-2 py-1 rounded">{(weekMatches as Match[]).length} pertandingan</span>
                 </div>
                 <div className="divide-y divide-slate-700/50">
-                  {weekMatches.map((match) => {
-                    const matchDate = match.match_date ? new Date(match.match_date) : null;
-                    return (
-                    <div key={match.id} className="p-3 hover:bg-slate-700/30 transition-colors">
-                      <div className="flex items-center gap-3">
-                        {/* Date Column */}
-                        <div className="hidden sm:flex flex-col items-center justify-center min-w-[60px] text-center">
-                          {matchDate ? (
-                            <>
-                              <span className="text-xs text-slate-400 uppercase">{matchDate.toLocaleDateString('id-ID', { weekday: 'short' })}</span>
-                              <span className="text-lg font-bold text-white">{matchDate.getDate()}</span>
-                              <span className="text-xs text-slate-400">{matchDate.toLocaleDateString('id-ID', { month: 'short' })}</span>
-                            </>
-                          ) : (
-                            <span className="text-xs text-slate-500">TBD</span>
-                          )}
-                        </div>
-
-                        <div className="hidden sm:block w-px h-10 bg-slate-700"></div>
-
-                        <div className="flex items-center justify-between flex-1">
-                          <div className="flex items-center gap-3 flex-1">
-                            {/* Home Team */}
-                            <div className="flex items-center gap-2 flex-1 justify-end">
-                              <span className="text-sm text-white font-medium text-right truncate max-w-[100px] sm:max-w-[150px]">{match.home_team?.name}</span>
-                              <div className="w-8 h-8 rounded bg-slate-700 flex items-center justify-center flex-shrink-0">
-                                {match.home_team?.logo_url ? <Image src={match.home_team.logo_url} alt="" className="w-6 h-6 object-contain"  width={24} height={24} /> : <span className="text-slate-400">{Icons.home}</span>}
-                              </div>
-                            </div>
-
-                            {/* Score */}
-                            <div className="min-w-[90px] text-center">
-                              {match.status === 'completed' ? (
-                                <div className="bg-green-600/20 border border-green-600/30 rounded px-3 py-1.5">
-                                  <span className="text-lg font-bold text-white">{match.home_score} - {match.away_score}</span>
-                                </div>
-                              ) : (
-                                <div className="bg-slate-700/50 rounded px-3 py-1.5">
-                                  <span className="text-xs text-slate-300">
-                                    {matchDate ? matchDate.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' }) : 'TBD'}
-                                  </span>
-                                  <span className="sm:hidden block text-xs text-slate-400 mt-0.5">
-                                    {matchDate ? matchDate.toLocaleDateString('id-ID', { day: 'numeric', month: 'short' }) : ''}
-                                  </span>
-                                </div>
-                              )}
-                            </div>
-
-                            {/* Away Team */}
-                            <div className="flex items-center gap-2 flex-1">
-                              <div className="w-8 h-8 rounded bg-slate-700 flex items-center justify-center flex-shrink-0">
-                                {match.away_team?.logo_url ? <Image src={match.away_team.logo_url} alt="" className="w-6 h-6 object-contain"  width={24} height={24} /> : <span className="text-slate-400">{Icons.plane}</span>}
-                              </div>
-                              <span className="text-sm text-white font-medium truncate max-w-[100px] sm:max-w-[150px]">{match.away_team?.name}</span>
-                            </div>
-                          </div>
-
-                          <span className={`ml-3 px-2 py-1 rounded text-xs font-medium flex items-center gap-1 ${
-                            match.status === 'completed' ? 'bg-green-600/20 text-green-400' :
-                            match.status === 'scheduled' ? 'bg-blue-600/20 text-blue-400' :
-                            'bg-slate-600/20 text-slate-400'
-                          }`}>
-                            {match.status === 'completed' ? Icons.check : Icons.clock}
-                            <span className="hidden sm:inline">{match.status === 'completed' ? 'Selesai' : match.status === 'scheduled' ? 'Terjadwal' : match.status}</span>
-                          </span>
-                        </div>
-                      </div>
-                    </div>
-                    );
-                  })}
+                  {(weekMatches as Match[]).map((match) => (
+                    <MatchRow key={match.id} match={match} showGroup={isCupFormat} cupGroups={cupGroups} />
+                  ))}
                 </div>
               </div>
               );

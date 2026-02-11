@@ -10,7 +10,7 @@ import {
   getMatchesByLeague
 } from '@/lib/supabase';
 import EnhancedCupGroupStandings from '@/components/EnhancedCupGroupStandings';
-import TournamentBracket from '@/components/TournamentBracket';
+import ConnectedBracket from '@/components/ConnectedBracket';
 import Navigation from '@/components/Navigation';
 import Footer from '@/components/Footer';
 import { League, CupGroupWithStandings, MatchWithTeams } from '@/types/supabase';
@@ -109,14 +109,14 @@ export default function CupTournamentPage() {
     { 
       id: 'groups' as TabType, 
       label: 'Group Stage', 
-      icon: '🎯', 
+      icon: '',
       count: groups.length, 
       show: league?.has_group_stage && groups.length > 0 
     },
     { 
       id: 'r16' as TabType, 
       label: 'Round of 16', 
-      icon: '🔥', 
+      icon: '',
       count: Math.floor(r16Matches.length / (r16Matches.some(m => m.leg_number === 2) ? 2 : 1)), 
       show: r16Matches.length > 0 
     },
@@ -130,14 +130,14 @@ export default function CupTournamentPage() {
     { 
       id: 'semis' as TabType, 
       label: 'Semi Finals', 
-      icon: '🏆', 
+      icon: '',
       count: Math.floor(semiMatches.length / (semiMatches.some(m => m.leg_number === 2) ? 2 : 1)), 
       show: semiMatches.length > 0 
     },
     { 
       id: 'final' as TabType, 
       label: 'Final', 
-      icon: '👑', 
+      icon: '',
       count: finalMatches.length, 
       show: finalMatches.length > 0 
     },
@@ -145,7 +145,7 @@ export default function CupTournamentPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 text-white flex items-center justify-center">
+      <div className="min-h-screen bg-linear-to-br from-slate-900 via-slate-800 to-slate-900 text-white flex items-center justify-center">
         <div className="text-center">
           <div className="relative w-20 h-20 mx-auto mb-6">
             <div className="absolute inset-0 rounded-full border-4 border-slate-700"></div>
@@ -159,7 +159,7 @@ export default function CupTournamentPage() {
 
   if (error) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 text-white flex items-center justify-center">
+      <div className="min-h-screen bg-linear-to-br from-slate-900 via-slate-800 to-slate-900 text-white flex items-center justify-center">
         <div className="max-w-md mx-auto px-4">
           <div className="bg-red-900/20 border border-red-600/50 rounded-2xl p-8 backdrop-blur-sm">
             <div className="text-center mb-4">
@@ -189,7 +189,7 @@ export default function CupTournamentPage() {
 
   if (!league) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 text-white flex items-center justify-center">
+      <div className="min-h-screen bg-linear-to-br from-slate-900 via-slate-800 to-slate-900 text-white flex items-center justify-center">
         <div className="text-center">
           <div className="text-6xl mb-4">🏆</div>
           <p className="text-slate-400 mb-6 text-lg">Tournament not found</p>
@@ -206,12 +206,12 @@ export default function CupTournamentPage() {
   }
 
   return (
-    <div className="min-h-screen flex flex-col bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 text-white">
+    <div className="min-h-screen flex flex-col bg-linear-to-br from-slate-900 via-slate-800 to-slate-900 text-white">
       <Navigation />
       
       {/* Hero Header */}
       <div className="relative bg-slate-800/50 border-b border-slate-700/50 backdrop-blur-sm">
-        <div className="absolute inset-0 bg-gradient-to-r from-blue-600/10 via-purple-600/10 to-blue-600/10"></div>
+        <div className="absolute inset-0 bg-linear-to-r from-blue-600/10 via-purple-600/10 to-blue-600/10"></div>
         <div className="relative max-w-7xl mx-auto px-4 py-8">
           <div className="flex items-start gap-6 mb-6">
             <Link
@@ -237,10 +237,10 @@ export default function CupTournamentPage() {
             
             <div className="flex-1">
               <div className="flex items-center gap-3 mb-2">
-                <h1 className="text-3xl md:text-4xl font-bold bg-gradient-to-r from-white to-slate-400 bg-clip-text text-transparent">
+                <h1 className="text-3xl md:text-4xl font-bold bg-linear-to-r from-white to-slate-400 bg-clip-text text-transparent">
                   {league.name}
                 </h1>
-                <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-gradient-to-r from-blue-600 to-purple-600 text-white text-sm font-semibold shadow-lg shadow-blue-500/25">
+                <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-linear-to-r from-blue-600 to-purple-600 text-white text-sm font-semibold shadow-lg shadow-blue-500/25">
                   <span>🏅</span>
                   <span>Cup Tournament</span>
                 </span>
@@ -260,7 +260,7 @@ export default function CupTournamentPage() {
             </div>
             <div className="h-2 bg-slate-700 rounded-full overflow-hidden">
               <div 
-                className="h-full bg-gradient-to-r from-blue-500 via-purple-500 to-blue-500 transition-all duration-500 rounded-full"
+                className="h-full bg-linear-to-r from-blue-500 via-purple-500 to-blue-500 transition-all duration-500 rounded-full"
                 style={{ width: `${progress}%` }}
               ></div>
             </div>
@@ -300,7 +300,7 @@ export default function CupTournamentPage() {
                   )}
                 </span>
                 {activeTab === tab.id && (
-                  <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-gradient-to-r from-blue-500 to-purple-500"></div>
+                  <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-linear-to-r from-blue-500 to-purple-500"></div>
                 )}
               </button>
             ))}
@@ -316,9 +316,9 @@ export default function CupTournamentPage() {
             {groups.length > 0 ? (
               <>
                 {/* Group Stage Info Card */}
-                <div className="bg-gradient-to-r from-indigo-600/20 to-purple-600/20 border border-indigo-500/30 rounded-2xl p-6 backdrop-blur-sm">
+                <div className="bg-linear-to-r from-indigo-600/20 to-purple-600/20 border border-indigo-500/30 rounded-2xl p-6 backdrop-blur-sm">
                   <h3 className="text-xl font-bold mb-4 flex items-center gap-2">
-                    <span>📊</span>
+                    <span></span>
                     <span>Group Stage Format</span>
                   </h3>
                   <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
@@ -362,18 +362,18 @@ export default function CupTournamentPage() {
 
         {/* Round of 16 */}
         {activeTab === 'r16' && (
-          <TournamentBracket matches={r16Matches} stage="round_of_16" />
+          <ConnectedBracket matches={r16Matches} />
         )}
 
         {/* Quarter Finals */}
         {activeTab === 'quarters' && (
-          <TournamentBracket matches={quarterMatches} stage="quarter_final" />
+          <ConnectedBracket matches={quarterMatches} />
         )}
 
         {/* Semi Finals */}
         {activeTab === 'semis' && (
           <div className="space-y-8">
-            <TournamentBracket matches={semiMatches} stage="semi_final" />
+            <ConnectedBracket matches={semiMatches} />
 
             {/* Third Place */}
             {thirdPlaceMatch.length > 0 && (
@@ -384,7 +384,7 @@ export default function CupTournamentPage() {
                     <span>Third Place Match</span>
                   </div>
                 </div>
-                <TournamentBracket matches={thirdPlaceMatch} stage="third_place" />
+                <ConnectedBracket matches={thirdPlaceMatch} />
               </div>
             )}
           </div>
@@ -393,13 +393,13 @@ export default function CupTournamentPage() {
         {/* Final */}
         {activeTab === 'final' && (
           <div className="space-y-8">
-            <TournamentBracket matches={finalMatches} stage="final" />
+            <ConnectedBracket matches={finalMatches} />
 
             {/* Champion Display if final is completed */}
             {finalMatches.length > 0 && finalMatches[0].status === 'completed' && (
-              <div className="bg-gradient-to-br from-yellow-600/30 via-orange-600/20 to-yellow-600/30 border-2 border-yellow-500/50 rounded-3xl p-12 text-center backdrop-blur-sm shadow-2xl shadow-yellow-500/20">
+              <div className="bg-linear-to-br from-yellow-600/30 via-orange-600/20 to-yellow-600/30 border-2 border-yellow-500/50 rounded-3xl p-12 text-center backdrop-blur-sm shadow-2xl shadow-yellow-500/20">
                 <div className="text-8xl mb-6 animate-bounce">🏆</div>
-                <h2 className="text-4xl md:text-5xl font-bold bg-gradient-to-r from-yellow-300 via-yellow-400 to-yellow-300 bg-clip-text text-transparent mb-4">
+                <h2 className="text-4xl md:text-5xl font-bold bg-linear-to-r from-yellow-300 via-yellow-400 to-yellow-300 bg-clip-text text-transparent mb-4">
                   CHAMPION!
                 </h2>
                 <div className="text-3xl font-bold text-white mb-2">
@@ -442,13 +442,6 @@ export default function CupTournamentPage() {
       <Footer />
 
       <style jsx>{`
-        .hide-scrollbar::-webkit-scrollbar {
-          display: none;
-        }
-        .hide-scrollbar {
-          -ms-overflow-style: none;
-          scrollbar-width: none;
-        }
         @keyframes fadeIn {
           from {
             opacity: 0;
@@ -458,9 +451,6 @@ export default function CupTournamentPage() {
             opacity: 1;
             transform: translateY(0);
           }
-        }
-        .animate-fadeIn {
-          animation: fadeIn 0.3s ease-out forwards;
         }
       `}</style>
     </div>
