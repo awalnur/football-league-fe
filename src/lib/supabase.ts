@@ -358,6 +358,8 @@ async function generateKnockoutSchedule(
   return { data: data?.length || 0, error };
 }
 
+
+
 // Helper: Generate Group + Knockout schedule
 async function generateGroupKnockoutSchedule(
   leagueId: string,
@@ -379,13 +381,48 @@ async function generateGroupKnockoutSchedule(
 
   // Create groups
   const groups: { id: string; name: string; teams: { id: string; name: string }[] }[] = [];
-  const groupNames = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H'];
 
   // Delete existing groups for this league
-  await supabase
-    .from('cup_groups')
-    .delete()
-    .eq('league_id', leagueId);
+  // await supabase
+  //   .from('cup_groups')
+  //   .delete()
+  //   .eq('league_id', leagueId);
+
+  const { data: existingGroups, error: existingError } = await supabase
+      .from('cup_groups')
+      .select(`
+    id,
+    group_name,
+    qualifiers_count,
+    cup_standings (
+      team_id,
+      pos,
+      teams (
+        id,
+        name
+      )
+    )
+  `)
+      .eq('league_id', leagueId);
+
+  if (existingError) {
+    return { data: null, error: existingError };
+  }
+
+// 2️⃣ If groups already exist → load from DB
+  if (existingGroups && existingGroups.length > 0) {
+    for (const group of existingGroups) {
+      groups.push({
+        id: group.id,
+        name: group.group_name,
+        teams: group.cup_standings.map((standing: any) => standing.teams)
+      });
+    }
+
+    return { data: groups, error: null };
+  }else{
+
+  const groupNames = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H'];
 
   // Create new groups
   for (let i = 0; i < groupCount; i++) {
@@ -439,6 +476,7 @@ async function generateGroupKnockoutSchedule(
       name: groupNames[i],
       teams: groupTeams
     });
+  }
   }
 
   // Generate group stage matches - ALL MATCHES ON SAME DAY PER MATCHWEEK
